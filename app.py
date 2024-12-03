@@ -17,6 +17,13 @@ OUT_FOLDER = r'C:\computer\3\itproject\digitaltool\digitaltool\out'
 TANNN = r"C:\computer\3\itproject\The_Digital_Human_TANGO\TANGO"
 MUSETALK = r"C:\computer\3\itproject\MuseTalk"
 DIGITALTOOL = r"C:\computer\3\itproject\digitaltool\digitaltool"
+
+# UPLOAD_FOLDER = r'/root/onethingai-fs/digitaltool/digitaltool/uploads'
+# ACT_FOLDER = r'/root/onethingai-fs/digitaltool/digitaltool/act'
+# OUT_FOLDER = r'/root/onethingai-fs/digitaltool/digitaltool/out'
+# TANNN = r"/root/onethingai-fs/TANGO"
+# MUSETALK = r"/root/onethingai-fs/MuseTalk"
+# DIGITALTOOL = r"/root/onethingai-fs/digitaltool/digitaltool"
 # 存储任务的内存列表
 tasks = []
 
@@ -61,7 +68,7 @@ def tannn(task):
 
     print("cmd_lip",cmd_lip)
     # 启动子进程（异步执行）
-    process = subprocess.Popen(cmd_lip, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    process = subprocess.Popen(f"bash -c '{cmd_lip}'", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     # 获取进程的标准输出和标准错误输出
     stdout, stderr = process.communicate()
@@ -95,7 +102,7 @@ def mu(task):
 
     print("cmd_MUSETALKlip", cmd_lip)
     # 启动子进程（异步执行）
-    process = subprocess.Popen(cmd_lip, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    process = subprocess.Popen(f"bash -c '{cmd_lip}'", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     # 获取进程的标准输出和标准错误输出
     stdout, stderr = process.communicate()
