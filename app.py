@@ -11,19 +11,19 @@ from flask import Flask, request, jsonify, send_from_directory, render_template
 app = Flask(__name__)
 
 # 文件存储目录
-UPLOAD_FOLDER = r'C:\computer\3\itproject\digitaltool\digitaltool\uploads'
-ACT_FOLDER = r'C:\computer\3\itproject\digitaltool\digitaltool\act'
-OUT_FOLDER = r'C:\computer\3\itproject\digitaltool\digitaltool\out'
-TANNN = r"C:\computer\3\itproject\The_Digital_Human_TANGO\TANGO"
-MUSETALK = r"C:\computer\3\itproject\MuseTalk"
-DIGITALTOOL = r"C:\computer\3\itproject\digitaltool\digitaltool"
+# UPLOAD_FOLDER = r'C:\computer\3\itproject\digitaltool\digitaltool\uploads'
+# ACT_FOLDER = r'C:\computer\3\itproject\digitaltool\digitaltool\act'
+# OUT_FOLDER = r'C:\computer\3\itproject\digitaltool\digitaltool\out'
+# TANNN = r"C:\computer\3\itproject\The_Digital_Human_TANGO\TANGO"
+# MUSETALK = r"C:\computer\3\itproject\MuseTalk"
+# DIGITALTOOL = r"C:\computer\3\itproject\digitaltool\digitaltool"
 
-# UPLOAD_FOLDER = r'/root/onethingai-fs/digitaltool/digitaltool/uploads'
-# ACT_FOLDER = r'/root/onethingai-fs/digitaltool/digitaltool/act'
-# OUT_FOLDER = r'/root/onethingai-fs/digitaltool/digitaltool/out'
-# TANNN = r"/root/onethingai-fs/TANGO"
-# MUSETALK = r"/root/onethingai-fs/MuseTalk"
-# DIGITALTOOL = r"/root/onethingai-fs/digitaltool/digitaltool"
+UPLOAD_FOLDER = r'/root/onethingai-fs/digitaltool/digitaltool/uploads'
+ACT_FOLDER = r'/root/onethingai-fs/digitaltool/digitaltool/act'
+OUT_FOLDER = r'/root/onethingai-fs/digitaltool/digitaltool/out'
+TANNN = r"/root/onethingai-fs/TANGO"
+MUSETALK = r"/root/onethingai-fs/MuseTalk"
+DIGITALTOOL = r"/root/onethingai-fs/digitaltool/digitaltool"
 # 存储任务的内存列表
 tasks = []
 
