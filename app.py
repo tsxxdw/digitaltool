@@ -18,12 +18,13 @@ app = Flask(__name__)
 # MUSETALK = r"C:\computer\3\itproject\MuseTalk"
 # DIGITALTOOL = r"C:\computer\3\itproject\digitaltool\digitaltool"
 
-UPLOAD_FOLDER = r'/root/onethingai-fs/digitaltool/digitaltool/uploads'
-ACT_FOLDER = r'/root/onethingai-fs/digitaltool/digitaltool/act'
-OUT_FOLDER = r'/root/onethingai-fs/digitaltool/digitaltool/out'
+UPLOAD_FOLDER = r'/root/onethingai-fs/digitaltool/uploads'
+ACT_FOLDER = r'/root/onethingai-fs/digitaltool/act'
+OUT_FOLDER = r'/root/onethingai-fs/digitaltool/out'
+DIGITALTOOL = r"/root/onethingai-fs/digitaltool"
 TANNN = r"/root/onethingai-fs/TANGO"
 MUSETALK = r"/root/onethingai-fs/MuseTalk"
-DIGITALTOOL = r"/root/onethingai-fs/digitaltool/digitaltool"
+
 # 存储任务的内存列表
 tasks = []
 
