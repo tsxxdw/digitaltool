@@ -7,24 +7,27 @@ from datetime import datetime
 import shutil
 from flask import Flask, request, jsonify, send_from_directory, render_template
 
+
+
+os_type = platform.system()
+if os_type == "Windows":
+    # 文件存储目录
+    UPLOAD_FOLDER = r'C:\computer\3\itproject\digitaltool\digitaltool\uploads'
+    ACT_FOLDER = r'C:\computer\3\itproject\digitaltool\digitaltool\act'
+    OUT_FOLDER = r'C:\computer\3\itproject\digitaltool\digitaltool\out'
+    TANNN = r"C:\computer\3\itproject\The_Digital_Human_TANGO\TANGO"
+    MUSETALK = r"C:\computer\3\itproject\MuseTalk"
+    DIGITALTOOL = r"C:\computer\3\itproject\digitaltool\digitaltool"
+else:
+    UPLOAD_FOLDER = r'/root/onethingai-fs/digitaltool/uploads'
+    ACT_FOLDER = r'/root/onethingai-fs/digitaltool/act'
+    OUT_FOLDER = r'/root/onethingai-fs/digitaltool/out'
+    DIGITALTOOL = r"/root/onethingai-fs/digitaltool"
+    TANNN = r"/root/onethingai-fs/TANGO"
+    MUSETALK = r"/root/onethingai-fs/MuseTalk"
+
 # 创建Flask应用
 app = Flask(__name__)
-
-# 文件存储目录
-# UPLOAD_FOLDER = r'C:\computer\3\itproject\digitaltool\digitaltool\uploads'
-# ACT_FOLDER = r'C:\computer\3\itproject\digitaltool\digitaltool\act'
-# OUT_FOLDER = r'C:\computer\3\itproject\digitaltool\digitaltool\out'
-# TANNN = r"C:\computer\3\itproject\The_Digital_Human_TANGO\TANGO"
-# MUSETALK = r"C:\computer\3\itproject\MuseTalk"
-# DIGITALTOOL = r"C:\computer\3\itproject\digitaltool\digitaltool"
-
-UPLOAD_FOLDER = r'/root/onethingai-fs/digitaltool/uploads'
-ACT_FOLDER = r'/root/onethingai-fs/digitaltool/act'
-OUT_FOLDER = r'/root/onethingai-fs/digitaltool/out'
-DIGITALTOOL = r"/root/onethingai-fs/digitaltool"
-TANNN = r"/root/onethingai-fs/TANGO"
-MUSETALK = r"/root/onethingai-fs/MuseTalk"
-
 # 存储任务的内存列表
 tasks = []
 
@@ -52,7 +55,7 @@ clean_old_files()
 def tannn(task):
     print(f"开始执行动作生成，任务ID：{task['task_id']}")
     # 需要执行的命令
-    os_type = platform.system()
+
     inference_path = os.path.join(TANNN, "inference.py")
     input_audio = task['audio']
     input_video = task['video']
@@ -68,8 +71,8 @@ def tannn(task):
         cmd_lip = f"cd {TANNN} && source /root/miniconda3/etc/profile.d/conda.sh && conda activate tango && python inference.py --audio_path {input_audio} --video_path {input_video} --save_path {output_video}"
     print("cmd_lip",cmd_lip)
     # 启动子进程（异步执行）
-    process = subprocess.Popen(f"bash -c '{cmd_lip}'", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-
+    #process = subprocess.Popen(f"bash -c '{cmd_lip}'", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    process = subprocess.Popen(cmd_lip, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     # 获取进程的标准输出和标准错误输出
     stdout, stderr = process.communicate()
 
@@ -101,8 +104,10 @@ def mu(task):
         cmd_lip = f"cd {MUSETALK} && source /root/miniconda3/etc/profile.d/conda.sh && conda activate musetalk && python -m scripts.inference --audio_path {input_audio} --video_path {input_video} --save_path {output_video}"
     print("cmd_MUSETALKlip", cmd_lip)
     # 启动子进程（异步执行）
-    process = subprocess.Popen(f"bash -c '{cmd_lip}'", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-
+    if os_type == "Windows":
+        process = subprocess.Popen(cmd_lip, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    else:
+        process = subprocess.Popen(f"bash -c '{cmd_lip}'", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     # 获取进程的标准输出和标准错误输出
     stdout, stderr = process.communicate()
 
@@ -156,6 +161,7 @@ def upload_files():
         'task_id': task_id,
         'video': video_path,
         'audio': audio_path,
+        'detail': '',
         'status': 'waiting',
         'output': None,
         'originaudioname':audio_file.filename.split('.')[0],
@@ -181,6 +187,7 @@ def check_tasks():
         for task in tasks:
             if task['status'] == 'waiting':
                 task['status'] = 'action_generating'  # 任务开始动作生成
+                task['detail'] = task['detail'] + "1 开始执行action_generating，执行时间：" + str(datetime.now())+"<br>"
                 tannn(task)  # 调用动作生成方法
                 break
 
@@ -191,6 +198,8 @@ def check_tasks():
             task_output_filename = os.path.join(ACT_FOLDER, f"{task['task_id']}.mp4")
             if os.path.exists(task_output_filename):
                 task['status'] = 'lip_syncing'  # 动作生成完成，进入口唇同步
+                task['detail'] = task['detail'] + "2 开始执行lip_syncing，执行时间：" + str(datetime.now())+"<br>"
+
                 mu(task)  # 调用口唇同步方法
         elif task['status'] == 'lip_syncing':
             # 假设口唇同步完成，文件存在就变为已完成，从 out 文件夹中查找
@@ -198,6 +207,7 @@ def check_tasks():
             if os.path.exists(task_output_filename):
                 task['status'] = 'completed'
                 task['output'] = f"{task['task_id']}.mp4"
+                task['detail'] = task['detail'] + "3 任务已完成，完成时间为：：" + str(datetime.now())+"<br>"
                 comple(task['task_id'])  # 调用完成方法
 
     return jsonify({"tasks": tasks})

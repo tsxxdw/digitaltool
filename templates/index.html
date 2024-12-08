@@ -160,6 +160,7 @@
             <th>任务ID</th>
             <th>视频文件</th>
             <th>音频文件</th>
+            <th>详情</th>
             <th>状态</th>
             <th>下载</th>
         </tr>
@@ -204,6 +205,7 @@
                         <td>${task.task_id}</td>
                         <td>${task.originvideoname.split('/').pop()}</td>
                         <td>${task.originaudioname.split('/').pop()}</td>
+                         <td>${task.detail.split('/').pop()}</td>
                         <td><span class="status ${statusClass}">${task.status}</span></td>
                         <td>${downloadButton}</td>
                     `;
