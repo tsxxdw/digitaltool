@@ -74,7 +74,8 @@ def tannn(task):
     if os_type == "Windows":
         process = subprocess.Popen(f"bash -c '{cmd_lip}'", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     else:
-        process = subprocess.Popen(cmd_lip, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        #process = subprocess.Popen(cmd_lip, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        process = subprocess.Popen(f"bash -c '{cmd_lip}'", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     # 获取进程的标准输出和标准错误输出
     stdout, stderr = process.communicate()
 
