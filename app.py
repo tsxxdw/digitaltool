@@ -64,17 +64,14 @@ def tannn(task):
     if os_type == "Windows":
         # Windows 环境下，使用 cmd 激活 conda 环境并执行命令
         cmd_lip = f"cmd /c \"cd /d {TANNN} && conda activate tango && python inference.py --audio_path {input_audio} --video_path {input_video} --save_path {output_video}\""
-        #cmd_lip = f"cmd /c \"cd /d {TANNN} && conda activate tango && python inference.py --audio_path \"{input_audio}\" --video_path \"{input_video}\" --save_path \"{output_video}\"\""
-
     else:
         # Linux/macOS 环境下，先进入目录，然后激活环境并执行命令
         cmd_lip = f"cd {TANNN} && source /root/miniconda3/etc/profile.d/conda.sh && conda activate tango && python inference.py --audio_path {input_audio} --video_path {input_video} --save_path {output_video}"
     print("cmd_lip",cmd_lip)
     # 启动子进程（异步执行）
     if os_type == "Windows":
-        process = subprocess.Popen(f"bash -c '{cmd_lip}'", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        process = subprocess.Popen(cmd_lip, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     else:
-        #process = subprocess.Popen(cmd_lip, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         process = subprocess.Popen(f"bash -c '{cmd_lip}'", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     # 获取进程的标准输出和标准错误输出
     stdout, stderr = process.communicate()
@@ -100,8 +97,6 @@ def mu(task):
     if os_type == "Windows":
         # Windows 环境下，使用 cmd 激活 conda 环境并执行命令
         cmd_lip = f"cmd /c \"cd /d {MUSETALK} && conda activate musetalk && python -m scripts.inference --audio_path {input_audio} --video_path {input_video} --save_path {output_video}\""
-        #cmd_lip = f"cmd /c \"cd /d {MUSETALK} && conda activate musetalk && python -m scripts.inference --audio_path \"{input_audio}\" --video_path \"{input_video}\" --save_path \"{output_video}\"\""
-
     else:
         # Linux/macOS 环境下，先进入目录，然后激活环境并执行命令
         cmd_lip = f"cd {MUSETALK} && source /root/miniconda3/etc/profile.d/conda.sh && conda activate musetalk && python -m scripts.inference --audio_path {input_audio} --video_path {input_video} --save_path {output_video}"
