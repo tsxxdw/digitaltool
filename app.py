@@ -1,5 +1,5 @@
 from flask import Flask
-from logic import index_logic, action_logic, train_logic, sync_logic
+from logic import index_logic, action_logic, train_logic, sync_logic, system_setting_logic
 
 app = Flask(__name__)
 
@@ -8,6 +8,7 @@ app.register_blueprint(index_logic.bp)
 app.register_blueprint(action_logic.bp)
 app.register_blueprint(train_logic.bp)
 app.register_blueprint(sync_logic.bp)
+app.register_blueprint(system_setting_logic.bp)
 
 if __name__ == '__main__':
     app.run(debug=True) 

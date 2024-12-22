@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>系统设置</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/system_setting.css') }}">
+</head>
+<body>
+    <div class="container fade-in">
+        <h1>系统设置</h1>
+        <nav>
+            <ul>
+                <li><a href="{{ url_for('index') }}">返回首页</a></li>
+            </ul>
+        </nav>
+        
+        <div class="card settings-form">
+            <form id="settingsForm">
+                <div class="form-group">
+                    <label for="tango_path">TANGO 路径：</label>
+                    <input type="text" id="tango_path" name="tango_path" required>
+                    <small>请输入TANGO项目的完整路径</small>
+                </div>
+                <div class="form-group">
+                    <label for="musetalk_path">MUSETALK 路径：</label>
+                    <input type="text" id="musetalk_path" name="musetalk_path" required>
+                    <small>请输入MUSETALK项目的完整路径</small>
+                </div>
+                <div class="button-group">
+                    <button type="submit">保存设置</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="{{ url_for('static', filename='js/system_setting.js') }}"></script>
+</body>
+</html> 
