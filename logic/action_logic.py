@@ -135,20 +135,18 @@ def upload():
             
         if platform.system() == 'Windows':
             tango_path = config.get('windows_tango_path', '')
+            # Windows 环境下，使用 cmd 激活 conda 环境并执行命令
+            cmd = f'cmd /c "cd /d {tango_path} && conda activate tango && python inference.py --audio_path {converted_audio_path} --video_path {converted_video_path} --save_path {upload_dir}"'
         else:
             tango_path = config.get('linux_tango_path', '')
+            # Linux/macOS 环境下，先进入目录，然后激活环境并执行命令
+            cmd = f'cd {tango_path} && source /root/miniconda3/etc/profile.d/conda.sh && conda activate tango && python inference.py --audio_path {converted_audio_path} --video_path {converted_video_path} --save_path {upload_dir}'
             
         if not tango_path:
             raise Exception("TANGO路径未配置")
             
-        subprocess.Popen([
-            'python',
-            os.path.join(tango_path, 'main.py'),
-            '--video', converted_video_path,
-            '--audio', converted_audio_path,
-            '--output_dir', upload_dir,
-            '--task_id', task_id
-        ])
+        # 使用 shell=True 来执行完整的命令字符串
+        subprocess.Popen(cmd, shell=True)
         
     except Exception as e:
         task.log.append(f"启动任务失败: {str(e)}")
