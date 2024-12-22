@@ -1,3 +1,7 @@
+// 全局变量来存储轮询间隔
+const POLLING_INTERVAL = 5000;      // 5秒
+const COMPLETED_POLLING_INTERVAL = 30000;  // 30秒
+
 // 更新任务列表
 function updateTasks() {
     $.get('/action/tasks', function(tasks) {
@@ -38,6 +42,14 @@ function updateTasks() {
             // 获取任务状态和日志
             pollTaskStatus(task.task_id);
         });
+        
+        // 根据是否有正在进行的任务决定下次更新的间隔
+        const hasActiveTasks = tasks.some(task => 
+            task.status !== "完成" && task.status !== "失败"
+        );
+        
+        // 设置下次更新的间隔
+        setTimeout(updateTasks, hasActiveTasks ? POLLING_INTERVAL : COMPLETED_POLLING_INTERVAL);
     });
 }
 
@@ -57,15 +69,19 @@ function pollTaskStatus(taskId) {
             logContainer.scrollTop(logContainer[0].scrollHeight);
         }
         
-        // 如果任务还在处理中，继续轮询
-        if (response.status === "处理中") {
-            setTimeout(() => pollTaskStatus(taskId), 1000);
-        } else {
-            // 任务完成或失败时，更新状态
-            updateTasks();
+        // 根据任务状态决定下次轮询的间隔
+        const interval = (response.status === "完成" || response.status === "失败") 
+            ? COMPLETED_POLLING_INTERVAL 
+            : POLLING_INTERVAL;
+        
+        // 如果任务还在进行中，继续轮询
+        if (response.status !== "完成" && response.status !== "失败") {
+            setTimeout(() => pollTaskStatus(taskId), interval);
         }
     }).fail(function(xhr) {
         console.error('获取任务状态失败:', xhr);
+        // 发生错误时，使用较长的轮询间隔
+        setTimeout(() => pollTaskStatus(taskId), COMPLETED_POLLING_INTERVAL);
     });
 }
 
@@ -136,11 +152,8 @@ $(document).ready(function() {
         }
     });
 
-    // 页面加载时更新任务列表
+    // 页面加载时启动第一次更新
     updateTasks();
-    
-    // 定期更新任务列表
-    setInterval(updateTasks, 50000);
 }); 
 
 function getStatusClass(status) {
