@@ -15,21 +15,46 @@
         </nav>
         
         <div class="card settings-form">
-            <form id="settingsForm">
-                <div class="form-group">
-                    <label for="tango_path">TANGO 路径：</label>
-                    <input type="text" id="tango_path" name="tango_path" required>
-                    <small>请输入TANGO项目的完整路径</small>
-                </div>
-                <div class="form-group">
-                    <label for="musetalk_path">MUSETALK 路径：</label>
-                    <input type="text" id="musetalk_path" name="musetalk_path" required>
-                    <small>请输入MUSETALK项目的完整路径</small>
-                </div>
-                <div class="button-group">
-                    <button type="submit">保存设置</button>
-                </div>
-            </form>
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="linux">Linux 设置</button>
+                <button class="tab-btn" data-tab="windows">Windows 设置</button>
+            </div>
+
+            <div class="tab-content active" id="linux">
+                <form id="linuxSettingsForm">
+                    <div class="form-group">
+                        <label for="linux_tango_path">TANGO 路径：</label>
+                        <input type="text" id="linux_tango_path" name="linux_tango_path" required>
+                        <small>请输入Linux系统下TANGO项目的完整路径</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="linux_musetalk_path">MUSETALK 路径：</label>
+                        <input type="text" id="linux_musetalk_path" name="linux_musetalk_path" required>
+                        <small>请输入Linux系统下MUSETALK项目的完整路径</small>
+                    </div>
+                    <div class="button-group">
+                        <button type="submit">保存 Linux 设置</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="tab-content" id="windows">
+                <form id="windowsSettingsForm">
+                    <div class="form-group">
+                        <label for="windows_tango_path">TANGO 路径：</label>
+                        <input type="text" id="windows_tango_path" name="windows_tango_path" required>
+                        <small>请输入Windows系统下TANGO项目的完整路径</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="windows_musetalk_path">MUSETALK 路径：</label>
+                        <input type="text" id="windows_musetalk_path" name="windows_musetalk_path" required>
+                        <small>请输入Windows系统下MUSETALK项目的完整路径</small>
+                    </div>
+                    <div class="button-group">
+                        <button type="submit">保存 Windows 设置</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 

@@ -1,21 +1,48 @@
 $(document).ready(function() {
-    // 页面加载时获取现有设置
-    $.get('/system_setting/get', function(data) {
-        $('#tango_path').val(data.tango_path || '');
-        $('#musetalk_path').val(data.musetalk_path || '');
+    // 页签切换功能
+    $('.tab-btn').click(function() {
+        $('.tab-btn').removeClass('active');
+        $(this).addClass('active');
+        
+        const tabId = $(this).data('tab');
+        $('.tab-content').removeClass('active');
+        $(`#${tabId}`).addClass('active');
     });
 
-    // 处理表单提交
-    $('#settingsForm').submit(function(e) {
-        e.preventDefault();
+    // 页面加载时获取现有设置
+    $.get('/system_setting/get', function(data) {
+        // Linux 设置
+        $('#linux_tango_path').val(data.linux_tango_path || '');
+        $('#linux_musetalk_path').val(data.linux_musetalk_path || '');
         
+        // Windows 设置
+        $('#windows_tango_path').val(data.windows_tango_path || '');
+        $('#windows_musetalk_path').val(data.windows_musetalk_path || '');
+    });
+
+    // 处理 Linux 设置表单提交
+    $('#linuxSettingsForm').submit(function(e) {
+        e.preventDefault();
+        saveSettings('linux');
+    });
+
+    // 处理 Windows 设置表单提交
+    $('#windowsSettingsForm').submit(function(e) {
+        e.preventDefault();
+        saveSettings('windows');
+    });
+
+    function saveSettings(platform) {
         const formData = {
-            tango_path: $('#tango_path').val(),
-            musetalk_path: $('#musetalk_path').val()
+            platform: platform,
+            settings: {
+                tango_path: $(`#${platform}_tango_path`).val(),
+                musetalk_path: $(`#${platform}_musetalk_path`).val()
+            }
         };
         
         // 禁用提交按钮
-        const submitButton = $(this).find('button[type="submit"]');
+        const submitButton = $(`#${platform}SettingsForm button[type="submit"]`);
         submitButton.prop('disabled', true);
         submitButton.text('保存中...');
         
@@ -43,8 +70,8 @@ $(document).ready(function() {
             complete: function() {
                 // 恢复提交按钮
                 submitButton.prop('disabled', false);
-                submitButton.text('保存设置');
+                submitButton.text(`保存 ${platform.charAt(0).toUpperCase() + platform.slice(1)} 设置`);
             }
         });
-    });
+    }
 }); 
