@@ -10,5 +10,8 @@ app.register_blueprint(train_logic.bp)
 app.register_blueprint(sync_logic.bp)
 app.register_blueprint(system_setting_logic.bp)
 
+# 执行初始化
+action_logic.init_action_module()
+
 if __name__ == '__main__':
     app.run(debug=True) 
