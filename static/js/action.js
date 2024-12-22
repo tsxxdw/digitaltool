@@ -92,16 +92,30 @@ function pollTaskStatus(taskId, isRefresh = false) {
 
 // 页面加载完成后执行
 $(document).ready(function() {
-    $('#uploadForm').submit(function(e) {
-        e.preventDefault();
+    updateTasks();
+
+    // 监听表单提交
+    $('#uploadForm').on('submit', function(e) {
+        e.preventDefault(); // 阻止表单默认提交行为
         
-        const formData = new FormData(this);
-        const submitButton = $(this).find('button[type="submit"]');
+        // 检查是否选择了文件
+        const videoFile = $('#video')[0].files[0];
+        const audioFile = $('#audio')[0].files[0];
         
+        if (!videoFile || !audioFile) {
+            alert('请选择视频和音频文件');
+            return false;
+        }
+
+        // 创建 FormData 对象
+        const formData = new FormData();
+        formData.append('video', videoFile);
+        formData.append('audio', audioFile);
+
         // 禁用提交按钮
-        submitButton.prop('disabled', true);
-        submitButton.text('上传中...');
-        
+        $('#submitBtn').prop('disabled', true);
+
+        // 发送 AJAX 请求
         $.ajax({
             url: '/action/upload',
             type: 'POST',
@@ -109,22 +123,25 @@ $(document).ready(function() {
             processData: false,
             contentType: false,
             success: function(response) {
-                alert('上传成功，任务ID: ' + response.task_id);
-                updateTasks();
+                if (response.task_id) {
+                    // 清空表单
+                    $('#uploadForm')[0].reset();
+                    // 更新任务列表
+                    updateTasks();
+                } else {
+                    alert('上传失败：' + (response.error || '未知错误'));
+                }
             },
             error: function(xhr) {
-                let errorMessage = '上传失败';
-                if (xhr.responseJSON && xhr.responseJSON.error) {
-                    errorMessage += ': ' + xhr.responseJSON.error;
-                }
-                alert(errorMessage);
+                alert('上传失败：' + (xhr.responseJSON?.error || '服务器错误'));
             },
             complete: function() {
-                // 恢复提交按钮
-                submitButton.prop('disabled', false);
-                submitButton.text('开始生成');
+                // 重新启用提交按钮
+                $('#submitBtn').prop('disabled', false);
             }
         });
+
+        return false;
     });
 
     // 显示下载链接
@@ -156,9 +173,6 @@ $(document).ready(function() {
             $('#linkModal').hide();
         }
     });
-
-    // 页面加载时启动第一次更新
-    updateTasks();
 }); 
 
 function getStatusClass(status) {

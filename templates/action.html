@@ -9,16 +9,16 @@
     <h1>数字人动作生成</h1>
     
     <div class="upload-form">
-        <form id="uploadForm">
+        <form id="uploadForm" enctype="multipart/form-data">
             <div class="form-group">
-                <label>视频文件：</label>
-                <input type="file" name="video" accept="video/*" required>
+                <label for="video">视频文件：</label>
+                <input type="file" id="video" name="video" accept="video/*" required>
             </div>
             <div class="form-group">
-                <label>音频文件：</label>
-                <input type="file" name="audio" accept="audio/*" required>
+                <label for="audio">音频文件：</label>
+                <input type="file" id="audio" name="audio" accept="audio/*" required>
             </div>
-            <button type="submit">开始生成</button>
+            <button type="submit" id="submitBtn" class="btn btn-primary">上传</button>
         </form>
     </div>
 
