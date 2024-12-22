@@ -1,40 +1,5 @@
 .sync-form {
-    margin: 20px 0;
-    padding: 20px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    background-color: #f9f9f9;
-}
-
-.form-group {
-    margin-bottom: 15px;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: bold;
-}
-
-.form-group select,
-.form-group input[type="file"] {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-}
-
-button[type="submit"] {
-    background-color: #4CAF50;
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-button[type="submit"]:hover {
-    background-color: #45a049;
+    animation: fadeIn 0.5s ease-out;
 }
 
 .task-list {
@@ -42,50 +7,24 @@ button[type="submit"]:hover {
 }
 
 .task-item {
-    margin-bottom: 15px;
-    padding: 15px;
-    border: 1px solid #eee;
-    border-radius: 5px;
-    background-color: #fff;
+    background: var(--card-background);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    animation: fadeIn 0.5s ease-out;
 }
 
 .log-container {
-    margin-top: 10px;
-    padding: 10px;
-    background-color: #f5f5f5;
-    border-radius: 3px;
-    max-height: 150px;
+    background: #f8f9fa;
+    border-radius: 5px;
+    padding: 15px;
+    margin-top: 15px;
+    max-height: 200px;
     overflow-y: auto;
-    font-family: monospace;
-    font-size: 14px;
-}
-
-.download-btn {
-    display: inline-block;
-    background-color: #2196F3;
-    color: white;
-    padding: 5px 15px;
-    border-radius: 3px;
-    text-decoration: none;
-    margin-right: 10px;
-}
-
-.download-btn:hover {
-    background-color: #1976D2;
-}
-
-.copy-link-btn {
-    display: inline-block;
-    background-color: #9E9E9E;
-    color: white;
-    padding: 5px 15px;
-    border-radius: 3px;
-    cursor: pointer;
-    user-select: none;
-}
-
-.copy-link-btn:hover {
-    background-color: #757575;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    border: 1px solid #e9ecef;
 }
 
 .modal {
@@ -95,31 +34,73 @@ button[type="submit"]:hover {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0,0,0,0.5);
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(5px);
+    z-index: 1000;
 }
 
 .modal-content {
-    position: relative;
-    background-color: #fefefe;
-    margin: 15% auto;
-    padding: 20px;
-    border-radius: 5px;
-    width: 80%;
+    background: var(--card-background);
+    border-radius: 10px;
+    padding: 25px;
+    width: 90%;
     max-width: 500px;
+    position: relative;
+    margin: 15% auto;
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(-100px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
 }
 
 .close {
     position: absolute;
-    right: 10px;
-    top: 5px;
+    right: 15px;
+    top: 10px;
     font-size: 24px;
     cursor: pointer;
+    color: var(--text-secondary);
+    transition: color 0.3s ease;
+}
+
+.close:hover {
+    color: var(--text-primary);
 }
 
 .download-link {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 5px;
+    margin: 15px 0;
     word-break: break-all;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+}
+
+.task-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.task-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.task-info > div {
+    background: #f8f9fa;
     padding: 10px;
-    background-color: #f5f5f5;
-    border-radius: 3px;
-    margin: 10px 0;
+    border-radius: 5px;
 } 

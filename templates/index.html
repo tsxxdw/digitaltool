@@ -5,13 +5,25 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-    <h1>数字人工具平台</h1>
-    <nav>
-        <ul>
-            <li><a href="{{ url_for('action.action') }}">动作生成</a></li>
-            <li><a href="{{ url_for('train.train') }}">口唇同步预训练</a></li>
-            <li><a href="{{ url_for('sync.sync') }}">口唇同步生成</a></li>
-        </ul>
-    </nav>
+    <div class="container fade-in">
+        <h1>数字人工具平台</h1>
+        <nav>
+            <ul>
+                <li><a href="{{ url_for('action.action') }}">动作生成</a></li>
+                <li><a href="{{ url_for('train.train') }}">口唇同步预训练</a></li>
+                <li><a href="{{ url_for('sync.sync') }}">口唇同步生成</a></li>
+            </ul>
+        </nav>
+        
+        <div class="card">
+            <h2>欢迎使用数字人工具平台</h2>
+            <p>本平台提供以下功能：</p>
+            <ul>
+                <li>数字人动作生成</li>
+                <li>口唇同步预训练</li>
+                <li>口唇同步生成</li>
+            </ul>
+        </div>
+    </div>
 </body>
 </html> 

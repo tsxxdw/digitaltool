@@ -1,37 +1,5 @@
 .train-form {
-    margin: 20px 0;
-    padding: 20px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    background-color: #f9f9f9;
-}
-
-.form-group {
-    margin-bottom: 15px;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: bold;
-}
-
-.form-group input[type="file"] {
-    width: 100%;
-    padding: 5px;
-}
-
-button[type="submit"] {
-    background-color: #4CAF50;
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-button[type="submit"]:hover {
-    background-color: #45a049;
+    animation: fadeIn 0.5s ease-out;
 }
 
 .task-list {
@@ -39,30 +7,57 @@ button[type="submit"]:hover {
 }
 
 .task-item {
-    margin-bottom: 15px;
-    padding: 15px;
-    border: 1px solid #eee;
-    border-radius: 5px;
-    background-color: #fff;
+    background: var(--card-background);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    animation: fadeIn 0.5s ease-out;
 }
 
 .log-container {
-    margin-top: 10px;
-    padding: 10px;
-    background-color: #f5f5f5;
-    border-radius: 3px;
-    max-height: 150px;
+    background: #f8f9fa;
+    border-radius: 5px;
+    padding: 15px;
+    margin-top: 15px;
+    max-height: 200px;
     overflow-y: auto;
-    font-family: monospace;
-    font-size: 14px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    border: 1px solid #e9ecef;
 }
 
-.status-complete {
-    color: #4CAF50;
-    font-weight: bold;
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background-color: #e9ecef;
+    border-radius: 4px;
+    margin-top: 10px;
+    overflow: hidden;
 }
 
-.status-training {
-    color: #2196F3;
-    font-weight: bold;
+.progress-bar-fill {
+    height: 100%;
+    background-color: var(--primary-color);
+    transition: width 0.3s ease;
+}
+
+.task-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.task-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.task-info > div {
+    background: #f8f9fa;
+    padding: 10px;
+    border-radius: 5px;
 } 
