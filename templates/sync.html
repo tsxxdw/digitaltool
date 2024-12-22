@@ -3,9 +3,47 @@
 <head>
     <title>口唇同步生成</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/sync.css') }}">
 </head>
 <body>
     <h1>口唇同步生成</h1>
-    <!-- 添加同步生成相关的表单和功能 -->
+    
+    <div class="sync-form">
+        <form id="syncForm">
+            <div class="form-group">
+                <label>选择训练好的视频：</label>
+                <select name="trained_video" required>
+                    <option value="">请选择...</option>
+                    {% for video in trained_videos %}
+                    <option value="{{ video.path }}">训练任务 {{ video.task_id }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>新的音频文件：</label>
+                <input type="file" name="audio" accept="audio/*" required>
+                <small>支持格式：MP3, WAV</small>
+            </div>
+            <button type="submit">开始生成</button>
+        </form>
+    </div>
+
+    <div class="task-list">
+        <h2>生成任务列表</h2>
+        <div id="taskContainer"></div>
+    </div>
+
+    <!-- 下载链接模态框 -->
+    <div id="linkModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>下载链接</h3>
+            <div id="downloadLink" class="download-link"></div>
+            <button onclick="copyDownloadLink()" class="copy-link-btn">复制链接</button>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="{{ url_for('static', filename='js/sync.js') }}"></script>
 </body>
 </html> 
