@@ -8,11 +8,20 @@ import json
 import platform
 import threading
 import queue
+from collections import deque
 
 bp = Blueprint('action', __name__)
 
 # 存储生成任务信息
 action_tasks = {}
+# 任务队列
+task_queue = deque()
+# 任务锁
+task_lock = threading.Lock()
+# 任务处理线程
+task_thread = None
+# 是否正在处理任务
+is_processing = False
 
 class ActionTask:
     def __init__(self, task_id, video_path, audio_path):
@@ -83,6 +92,45 @@ def process_output(task, pipe, is_error=False):
             else:
                 print(f"Output: {line}")
 
+def process_task_queue():
+    """处理任务队列"""
+    global is_processing
+    while True:
+        with task_lock:
+            if not task_queue:
+                is_processing = False
+                break
+            current_task = task_queue[0]  # 获取但不移除
+
+        try:
+            # 执行任务
+            process = current_task.process
+            if process:
+                process.wait()  # 等待当前任务完成
+                
+                # 检查进程返回码
+                if process.returncode == 0:
+                    current_task.status = "完成"
+                else:
+                    current_task.status = "失败"
+                    current_task.add_log(f"任务执行失败，返回码: {process.returncode}")
+        except Exception as e:
+            current_task.status = "失败"
+            current_task.add_log(f"任务执行异常: {str(e)}")
+        finally:
+            with task_lock:
+                task_queue.popleft()  # 移除已完成的任务
+
+def start_task_processing():
+    """启动任务处理"""
+    global task_thread, is_processing
+    with task_lock:
+        if not is_processing and task_queue:
+            is_processing = True
+            task_thread = threading.Thread(target=process_task_queue)
+            task_thread.daemon = True
+            task_thread.start()
+
 @bp.route('/action')
 def action():
     return render_template('action.html')
@@ -97,7 +145,7 @@ def upload():
     
     # 生成带时间戳的任务ID
     current_time = datetime.now().strftime('%Y%m%d%H%M%S')
-    random_str = str(uuid.uuid4())[:6]  # 获取UUID的前6位
+    random_str = str(uuid.uuid4())[:6]
     task_id = f"{current_time}-{random_str}"
     
     # 创建上传目录
@@ -216,6 +264,17 @@ def upload():
         stderr_thread.daemon = True
         stdout_thread.start()
         stderr_thread.start()
+
+        # 将任务添加到队列
+        with task_lock:
+            task_queue.append(task)
+            if len(task_queue) > 1:
+                task.log.append("任务已加入队列，等待前面的任务完成...")
+            else:
+                task.log.append("任务开始执行...")
+        
+        # 启动任务处理
+        start_task_processing()
         
     except Exception as e:
         task.log.append(f"启动任务失败: {str(e)}")
@@ -228,14 +287,23 @@ def upload():
 def get_tasks():
     task_list = []
     for task in action_tasks.values():
-        task_list.append({
+        position = -1
+        with task_lock:
+            try:
+                position = list(task_queue).index(task) + 1
+            except ValueError:
+                pass
+            
+        task_info = {
             'task_id': task.task_id,
             'status': task.status,
             'video_name': task.video_name,
             'audio_name': task.audio_name,
             'create_time': task.create_time.strftime('%Y-%m-%d %H:%M:%S'),
-            'output_file': task.output_file
-        })
+            'output_file': task.output_file,
+            'queue_position': position if position > 0 else None
+        }
+        task_list.append(task_info)
     return jsonify(task_list)
 
 @bp.route('/action/task_status/<task_id>')

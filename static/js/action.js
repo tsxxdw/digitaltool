@@ -3,6 +3,9 @@ function updateTasks() {
     $.get('/action/tasks', function(tasks) {
         $('#taskContainer').empty();
         tasks.forEach(function(task) {
+            let queueInfo = task.queue_position ? 
+                `<div class="queue-info">队列位置: ${task.queue_position}</div>` : '';
+                
             let taskHtml = `
                 <div class="task-item">
                     <div class="task-header">
@@ -10,9 +13,17 @@ function updateTasks() {
                             <div><strong>任务ID:</strong> ${task.task_id}</div>
                             <div><strong>状态:</strong> <span class="status-badge ${task.status === '完成' ? 'status-complete' : 'status-processing'}">${task.status}</span></div>
                             <div><strong>创建时间:</strong> ${task.create_time}</div>
+                            ${queueInfo}
                         </div>
                     </div>
-
+                    <div class="file-info">
+                        <div class="file-item">
+                            ${task.video_name}
+                        </div>
+                        <div class="file-item">
+                            ${task.audio_name}
+                        </div>
+                    </div>
                     <div class="log-container" id="log-${task.task_id}"></div>
                     ${task.output_file ? `
                         <div class="download-actions">
