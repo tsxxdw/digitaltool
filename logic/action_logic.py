@@ -3,27 +3,65 @@ import os
 import subprocess
 import uuid
 from datetime import datetime
+import shutil
+import json
+import platform
 
 bp = Blueprint('action', __name__)
 
-# 存储任务信息的字典
-tasks = {}
+# 存储生成任务信息
+action_tasks = {}
 
-class Task:
+class ActionTask:
     def __init__(self, task_id, video_path, audio_path):
         self.task_id = task_id
         self.video_path = video_path
+        self.video_name = os.path.basename(video_path)
         self.audio_path = audio_path
+        self.audio_name = os.path.basename(audio_path)
         self.status = "处理中"
         self.log = []
         self.output_file = None
         self.create_time = datetime.now()
 
+def convert_video_to_mp4(input_path, output_path):
+    """将视频转换为MP4格式"""
+    try:
+        subprocess.run([
+            'ffmpeg', '-i', input_path,
+            '-c:v', 'libx264',
+            '-preset', 'medium',
+            '-crf', '23',
+            '-y',
+            output_path
+        ], check=True, capture_output=True)
+        return True
+    except subprocess.CalledProcessError as e:
+        print(f"视频转换错误: {e.stderr.decode()}")
+        return False
+
+def convert_audio_to_wav(input_path, output_path):
+    """将音频转换为WAV格式"""
+    try:
+        subprocess.run([
+            'ffmpeg', '-i', input_path,
+            '-vn',  # 不处理视频
+            '-acodec', 'pcm_s16le',  # 16位PCM编码
+            '-ar', '44100',  # 采样率44.1kHz
+            '-ac', '2',  # 双声道
+            '-y',
+            output_path
+        ], check=True, capture_output=True)
+        return True
+    except subprocess.CalledProcessError as e:
+        print(f"音频转换错误: {e.stderr.decode()}")
+        return False
+
 @bp.route('/action')
 def action():
     return render_template('action.html')
 
-@bp.route('/upload', methods=['POST'])
+@bp.route('/action/upload', methods=['POST'])
 def upload():
     if 'video' not in request.files or 'audio' not in request.files:
         return jsonify({'error': '请上传视频和音频文件'}), 400
@@ -35,32 +73,85 @@ def upload():
     task_id = str(uuid.uuid4())
     
     # 创建上传目录
-    upload_dir = os.path.join('static', 'uploads', task_id)
+    upload_dir = os.path.join('static', 'action_uploads', task_id)
     os.makedirs(upload_dir, exist_ok=True)
     
-    # 保存上传的文件
-    video_path = os.path.join(upload_dir, video.filename)
-    audio_path = os.path.join(upload_dir, audio.filename)
+    # 保存原始文件
+    original_video_path = os.path.join(upload_dir, 'original_' + video.filename)
+    original_audio_path = os.path.join(upload_dir, 'original_' + audio.filename)
     
-    video.save(video_path)
-    audio.save(audio_path)
+    video.save(original_video_path)
+    audio.save(original_audio_path)
+    
+    # 转换后的文件路径
+    converted_video_path = os.path.join(upload_dir, 'input_video.mp4')
+    converted_audio_path = os.path.join(upload_dir, 'input_audio.wav')  # 改为WAV格式
+    
+    # 转换视频格式
+    if not convert_video_to_mp4(original_video_path, converted_video_path):
+        shutil.rmtree(upload_dir)  # 清理临时文件
+        return jsonify({'error': '视频格式转换失败'}), 400
+        
+    # 转换音频格式为WAV
+    if not convert_audio_to_wav(original_audio_path, converted_audio_path):
+        shutil.rmtree(upload_dir)  # 清理临时文件
+        return jsonify({'error': '音频格式转换失败'}), 400
     
     # 创建新任务
-    task = Task(task_id, video_path, audio_path)
-    tasks[task_id] = task
-
-    print("aa")
-    # 启动处理进程 (这里需要替换为实际的处理脚本路径)
-    # subprocess.Popen(['python', 'process_video.py',
-    #                  '--video', video_path,
-    #                  '--audio', audio_path,
-    #                  '--task_id', task_id])
+    task = ActionTask(task_id, converted_video_path, converted_audio_path)
+    task.log.append(f"原始视频文件: {video.filename}")
+    task.log.append(f"原始音频文件: {audio.filename}")
+    task.log.append("文件格式转换完成")
+    action_tasks[task_id] = task
+    
+    # 调用外部生成项目
+    try:
+        # 从配置文件读取TANGO路径
+        config_file = os.path.join('config', 'system_setting.json')
+        with open(config_file, 'r') as f:
+            config = json.load(f)
+            
+        if platform.system() == 'Windows':
+            tango_path = config.get('windows_tango_path', '')
+        else:
+            tango_path = config.get('linux_tango_path', '')
+            
+        if not tango_path:
+            raise Exception("TANGO路径未配置")
+            
+        subprocess.Popen([
+            'python',
+            os.path.join(tango_path, 'main.py'),
+            '--video', converted_video_path,
+            '--audio', converted_audio_path,
+            '--output_dir', upload_dir,
+            '--task_id', task_id
+        ])
+        
+    except Exception as e:
+        task.log.append(f"启动任务失败: {str(e)}")
+        task.status = "失败"
+        return jsonify({'error': str(e)}), 500
     
     return jsonify({'task_id': task_id})
 
-@bp.route('/task_status/<task_id>')
+@bp.route('/action/tasks')
+def get_tasks():
+    task_list = []
+    for task in action_tasks.values():
+        task_list.append({
+            'task_id': task.task_id,
+            'status': task.status,
+            'video_name': task.video_name,
+            'audio_name': task.audio_name,
+            'create_time': task.create_time.strftime('%Y-%m-%d %H:%M:%S'),
+            'output_file': task.output_file
+        })
+    return jsonify(task_list)
+
+@bp.route('/action/task_status/<task_id>')
 def task_status(task_id):
-    task = tasks.get(task_id)
+    task = action_tasks.get(task_id)
     if not task:
         return jsonify({'error': '任务不存在'}), 404
     
@@ -68,16 +159,4 @@ def task_status(task_id):
         'status': task.status,
         'log': task.log,
         'output_file': task.output_file
-    })
-
-@bp.route('/tasks')
-def get_tasks():
-    task_list = []
-    for task in tasks.values():
-        task_list.append({
-            'task_id': task.task_id,
-            'status': task.status,
-            'create_time': task.create_time.strftime('%Y-%m-%d %H:%M:%S'),
-            'output_file': task.output_file
-        })
-    return jsonify(task_list) 
+    }) 

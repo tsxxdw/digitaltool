@@ -79,4 +79,52 @@
     background: #f8f9fa;
     padding: 10px;
     border-radius: 5px;
+}
+
+.file-info {
+    margin: 15px 0;
+    padding: 10px;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+    border: 1px solid #e9ecef;
+}
+
+.file-item {
+    margin: 8px 0;
+    display: flex;
+    align-items: center;
+}
+
+.file-label {
+    font-weight: 500;
+    color: var(--text-primary);
+    min-width: 80px;
+}
+
+.file-name {
+    color: var(--text-secondary);
+    word-break: break-all;
+    padding: 4px 8px;
+    background-color: #fff;
+    border-radius: 3px;
+    border: 1px solid #e0e0e0;
+    flex: 1;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.status-processing {
+    background-color: var(--warning-color);
+    color: white;
+}
+
+.status-complete {
+    background-color: var(--success-color);
+    color: white;
 } 
