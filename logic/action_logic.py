@@ -72,7 +72,7 @@ def safe_decode(text):
     return str(text)
 
 class ActionTask:
-    def __init__(self, task_id, video_path, audio_path):
+    def __init__(self, task_id, video_path, audio_path, cmd):
         self.task_id = task_id
         self.video_path = video_path
         self.video_name = os.path.basename(video_path)
@@ -83,6 +83,7 @@ class ActionTask:
         self.output_file = None
         self.create_time = datetime.now()
         self.process = None
+        self.cmd = cmd  # 存储命令，稍后执行
         self.log_queue = queue.Queue()
         self.log_file = os.path.join('static', 'action_uploads', task_id, 'task.log')
         os.makedirs(os.path.dirname(self.log_file), exist_ok=True)
@@ -128,6 +129,33 @@ class ActionTask:
             print(f"加载日志错误: {str(e)}")
             self.log = [f"加载日志出错: {str(e)}"]
         return self.log
+
+    def start_process(self):
+        """启动进程"""
+        if not self.process:
+            self.process = subprocess.Popen(
+                self.cmd,
+                shell=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                bufsize=1,
+                universal_newlines=True
+            )
+            
+            # 创建线程处理输出
+            stdout_thread = threading.Thread(
+                target=process_output,
+                args=(self, self.process.stdout, False)
+            )
+            stderr_thread = threading.Thread(
+                target=process_output,
+                args=(self, self.process.stderr, True)
+            )
+
+            stdout_thread.daemon = True
+            stderr_thread.daemon = True
+            stdout_thread.start()
+            stderr_thread.start()
 
 def get_file_extension(filename):
     """获取文件扩展名（小写）"""
@@ -212,7 +240,7 @@ def process_task_queue():
             current_task = task_queue[0]
             if current_task.status != "等待中":
                 # 如果不是等待中的任务，说明已经在处理或完成了
-                if current_task.status == "完成":
+                if current_task.status == "完成" or current_task.status == "失败":
                     # 如果完成了，移除任务
                     task_queue.popleft()
                     continue
@@ -222,9 +250,11 @@ def process_task_queue():
             # 开始处理新任务
             current_task.status = "处理中"
             current_task.add_log("开始处理任务...")
+            # 启动进程
+            current_task.start_process()
 
         try:
-            # 执行任务
+            # 等待任务完成
             process = current_task.process
             if process:
                 process.wait()  # 等待当前任务完成
@@ -357,39 +387,13 @@ def upload():
         task_log += f"\n视频文件: {converted_video_path_abs}"
         task_log += f"\n输出文件: {output_video}"
             
-        # 创建新任务
-        task = ActionTask(task_id, converted_video_path, converted_audio_path)
+        # 创建新任务（不立即启动进程）
+        task = ActionTask(task_id, converted_video_path, converted_audio_path, cmd)
         task.log.append(f"原始视频文件: {video.filename}")
         task.log.append(f"原始音频文件: {audio.filename}")
         task.log.append(task_log)
         task.output_file = output_video
         action_tasks[task_id] = task
-
-        # 使用 Popen 启动进程，并捕获输出
-        process = subprocess.Popen(
-            cmd,
-            shell=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            bufsize=1,
-            universal_newlines=True
-        )
-        task.process = process
-
-        # 创建线程处理输出
-        stdout_thread = threading.Thread(
-            target=process_output,
-            args=(task, process.stdout, False)
-        )
-        stderr_thread = threading.Thread(
-            target=process_output,
-            args=(task, process.stderr, True)
-        )
-
-        stdout_thread.daemon = True
-        stderr_thread.daemon = True
-        stdout_thread.start()
-        stderr_thread.start()
 
         # 将任务添加到队列
         with task_lock:
@@ -477,3 +481,18 @@ def task_status(task_id):
             'new_logs': new_logs,
             'output_file': task.output_file
         }) 
+
+def init_action_module():
+    """初始化动作模块"""
+    # 清空上传目录
+    upload_dir = os.path.join('static', 'action_uploads')
+    if os.path.exists(upload_dir):
+        for filename in os.listdir(upload_dir):
+            file_path = os.path.join(upload_dir, filename)
+            try:
+                if os.path.isfile(file_path) or os.path.islink(file_path):
+                    os.unlink(file_path)
+                elif os.path.isdir(file_path):
+                    shutil.rmtree(file_path)
+            except Exception as e:
+                print(f"删除文件或目录失败: {file_path} - {str(e)}") 

@@ -1,6 +1,6 @@
 // 全局变量来存储轮询间隔
-const POLLING_INTERVAL = 5000;      // 5秒
-const COMPLETED_POLLING_INTERVAL = 30000;  // 30秒
+const POLLING_INTERVAL = 10000;      // 10秒
+const COMPLETED_POLLING_INTERVAL = null;  // 已完成的任务不再轮询
 
 // 更新任务列表
 function updateTasks() {
@@ -43,11 +43,13 @@ function updateTasks() {
             pollTaskStatus(task.task_id, true);
         });
         
-        // 设置下次更新的间隔
+        // 只有存在进行中的任务时才继续轮询
         const hasActiveTasks = tasks.some(task => 
             task.status !== "完成" && task.status !== "失败"
         );
-        setTimeout(updateTasks, hasActiveTasks ? POLLING_INTERVAL : COMPLETED_POLLING_INTERVAL);
+        if (hasActiveTasks) {
+            setTimeout(updateTasks, POLLING_INTERVAL);
+        }
     });
 }
 
@@ -79,18 +81,12 @@ function pollTaskStatus(taskId, isRefresh = false) {
         // 滚动到底部
         logContainer.scrollTop(logContainer[0].scrollHeight);
         
-        // 根据任务状态决定下次轮询的间隔
-        const interval = (response.status === "完成" || response.status === "失败") 
-            ? COMPLETED_POLLING_INTERVAL 
-            : POLLING_INTERVAL;
-        
-        // 如果任务还在进行中，继续轮询（非刷新模式）
+        // 只有任务正在进行中时才继续轮询
         if (response.status !== "完成" && response.status !== "失败") {
-            setTimeout(() => pollTaskStatus(taskId, false), interval);
+            setTimeout(() => pollTaskStatus(taskId, false), POLLING_INTERVAL);
         }
     }).fail(function(xhr) {
         console.error('获取任务状态失败:', xhr);
-        setTimeout(() => pollTaskStatus(taskId, false), COMPLETED_POLLING_INTERVAL);
     });
 }
 
