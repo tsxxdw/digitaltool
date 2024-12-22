@@ -142,13 +142,23 @@
     font-weight: 500;
 }
 
+.status-waiting {
+    background-color: #ffc107;
+    color: #000;
+}
+
 .status-processing {
-    background-color: var(--warning-color);
+    background-color: #17a2b8;
     color: white;
 }
 
 .status-complete {
-    background-color: var(--success-color);
+    background-color: #28a745;
+    color: white;
+}
+
+.status-failed {
+    background-color: #dc3545;
     color: white;
 }
 

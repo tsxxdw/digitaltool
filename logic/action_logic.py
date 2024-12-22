@@ -9,6 +9,7 @@ import platform
 import threading
 import queue
 from collections import deque
+import sys
 
 bp = Blueprint('action', __name__)
 
@@ -23,6 +24,53 @@ task_thread = None
 # 是否正在处理任务
 is_processing = False
 
+def detect_encoding(text):
+    """检测文本编码"""
+    if isinstance(text, str):
+        return 'utf-8'
+    
+    # 尝试常见的编码
+    encodings = ['utf-8', 'gbk', 'gb2312', 'ascii', 'iso-8859-1', 'utf-16', 'big5']
+    
+    # 首先尝试 chardet 检测
+    try:
+        import chardet
+        result = chardet.detect(text)
+        if result and result['encoding']:
+            try:
+                text.decode(result['encoding'])
+                return result['encoding']
+            except:
+                pass
+    except ImportError:
+        pass
+
+    # 如果 chardet 检测失败，尝试预定义的编码列表
+    for encoding in encodings:
+        try:
+            text.decode(encoding)
+            return encoding
+        except:
+            continue
+            
+    # 如果都失败了，使用 latin1（它能解码任何字节序列）
+    return 'latin1'
+
+def safe_decode(text):
+    """安全地解码文本"""
+    if isinstance(text, str):
+        return text
+        
+    if isinstance(text, bytes):
+        encoding = detect_encoding(text)
+        try:
+            return text.decode(encoding, errors='replace')
+        except:
+            # 如果检测到的编码仍然失败，使用 latin1
+            return text.decode('latin1', errors='replace')
+    
+    return str(text)
+
 class ActionTask:
     def __init__(self, task_id, video_path, audio_path):
         self.task_id = task_id
@@ -30,32 +78,55 @@ class ActionTask:
         self.video_name = os.path.basename(video_path)
         self.audio_path = audio_path
         self.audio_name = os.path.basename(audio_path)
-        self.status = "处理中"
+        self.status = "等待中"
         self.log = []
         self.output_file = None
         self.create_time = datetime.now()
         self.process = None
         self.log_queue = queue.Queue()
-        # 创建日志文件
         self.log_file = os.path.join('static', 'action_uploads', task_id, 'task.log')
-        # 确保日志目录存在
         os.makedirs(os.path.dirname(self.log_file), exist_ok=True)
 
     def add_log(self, message):
         """添加日志并写入文件"""
-        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        log_entry = f"[{timestamp}] {message}"
-        self.log.append(log_entry)
-        self.log_queue.put(log_entry)
-        # 写入日志文件
-        with open(self.log_file, 'a', encoding='utf-8') as f:
-            f.write(log_entry + '\n')
+        try:
+            # 确保消息是字符串并正确编码
+            message = safe_decode(message)
+            
+            timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            log_entry = f"[{timestamp}] {message}"
+            
+            # 添加到内存日志
+            self.log.append(log_entry)
+            self.log_queue.put(log_entry)
+
+            # 写入文件
+            try:
+                with open(self.log_file, 'a', encoding='utf-8') as f:
+                    f.write(log_entry + '\n')
+            except UnicodeEncodeError:
+                # 如果 UTF-8 编码失败，尝试使用系统默认编码
+                with open(self.log_file, 'a', encoding=sys.getdefaultencoding(), errors='replace') as f:
+                    f.write(log_entry + '\n')
+                    
+        except Exception as e:
+            print(f"写入日志错误: {str(e)}")
 
     def load_logs(self):
         """从文件加载日志"""
-        if os.path.exists(self.log_file):
-            with open(self.log_file, 'r', encoding='utf-8') as f:
-                self.log = [line.strip() for line in f.readlines()]
+        try:
+            if os.path.exists(self.log_file):
+                try:
+                    # 首先尝试 UTF-8
+                    with open(self.log_file, 'r', encoding='utf-8') as f:
+                        self.log = [line.strip() for line in f.readlines()]
+                except UnicodeDecodeError:
+                    # 如果失败，尝试系统默认编码
+                    with open(self.log_file, 'r', encoding=sys.getdefaultencoding(), errors='replace') as f:
+                        self.log = [line.strip() for line in f.readlines()]
+        except Exception as e:
+            print(f"加载日志错误: {str(e)}")
+            self.log = [f"加载日志出错: {str(e)}"]
         return self.log
 
 def get_file_extension(filename):
@@ -98,27 +169,33 @@ def convert_audio_to_wav(input_path, output_path):
 def process_output(task, pipe, is_error=False):
     """处理进程输出"""
     try:
+        # 设置管道的编码为 utf-8
+        if hasattr(pipe, 'reconfigure'):
+            pipe.reconfigure(encoding='utf-8', errors='replace')
+            
         while True:
-            line = pipe.readline()
-            if not line:
-                break
             try:
-                # 尝试使用 utf-8 解码
-                if isinstance(line, bytes):
-                    line = line.decode('utf-8', errors='replace')
-                line = line.strip()
+                line = pipe.readline()
+                if not line:
+                    break
+                    
+                # 安全解码
+                line = safe_decode(line).strip()
+                
                 if line:
                     task.add_log(line)
                     if is_error:
                         print(f"Error: {line}")
                     else:
                         print(f"Output: {line}")
-            except UnicodeError as e:
-                error_msg = f"编码错误: {str(e)}"
+            except Exception as e:
+                error_msg = f"处理单行输出错误: {str(e)}"
                 task.add_log(error_msg)
                 print(error_msg)
+                continue  # 继续处理下一行
+                
     except Exception as e:
-        error_msg = f"处理输出错误: {str(e)}"
+        error_msg = f"处理输出流错误: {str(e)}"
         task.add_log(error_msg)
         print(error_msg)
 
@@ -130,7 +207,21 @@ def process_task_queue():
             if not task_queue:
                 is_processing = False
                 break
-            current_task = task_queue[0]  # 获取但不移除
+            
+            # 检查队首任务的状态
+            current_task = task_queue[0]
+            if current_task.status != "等待中":
+                # 如果不是等待中的任务，说明已经在处理或完成了
+                if current_task.status == "完成":
+                    # 如果完成了，移除任务
+                    task_queue.popleft()
+                    continue
+                # 如果是处理中，等待处理完成
+                break
+            
+            # 开始处理新任务
+            current_task.status = "处理中"
+            current_task.add_log("开始处理任务...")
 
         try:
             # 执行任务
@@ -141,6 +232,7 @@ def process_task_queue():
                 # 检查进程返回码
                 if process.returncode == 0:
                     current_task.status = "完成"
+                    current_task.add_log("任务处理完成")
                 else:
                     current_task.status = "失败"
                     current_task.add_log(f"任务执行失败，返回码: {process.returncode}")
@@ -149,17 +241,21 @@ def process_task_queue():
             current_task.add_log(f"任务执行异常: {str(e)}")
         finally:
             with task_lock:
-                task_queue.popleft()  # 移除已完成的任务
+                if current_task.status in ["完成", "失败"]:
+                    task_queue.popleft()  # 移除已完成或失败的任务
 
 def start_task_processing():
     """启动任务处理"""
     global task_thread, is_processing
     with task_lock:
         if not is_processing and task_queue:
-            is_processing = True
-            task_thread = threading.Thread(target=process_task_queue)
-            task_thread.daemon = True
-            task_thread.start()
+            # 检查是否有正在处理中的任务
+            processing_tasks = [t for t in task_queue if t.status == "处理中"]
+            if not processing_tasks:
+                is_processing = True
+                task_thread = threading.Thread(target=process_task_queue)
+                task_thread.daemon = True
+                task_thread.start()
 
 @bp.route('/action')
 def action():
@@ -298,10 +394,11 @@ def upload():
         # 将任务添加到队列
         with task_lock:
             task_queue.append(task)
-            if len(task_queue) > 1:
-                task.log.append("任务已加入队列，等待前面的任务完成...")
+            queue_position = len(task_queue)
+            if queue_position > 1:
+                task.add_log(f"任务已加入队列，当前位置：{queue_position}")
             else:
-                task.log.append("任务开始执行...")
+                task.add_log("任务已加入队列，即将开始处理...")
         
         # 启动任务处理
         start_task_processing()

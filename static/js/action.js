@@ -11,7 +11,7 @@ function updateTasks() {
                     <div class="task-header">
                         <div class="task-info">
                             <div><strong>任务ID:</strong> ${task.task_id}</div>
-                            <div><strong>状态:</strong> <span class="status-badge ${task.status === '完成' ? 'status-complete' : 'status-processing'}">${task.status}</span></div>
+                            <div><strong>状态:</strong> <span class="status-badge ${getStatusClass(task.status)}">${task.status}</span></div>
                             <div><strong>创建时间:</strong> ${task.create_time}</div>
                             ${queueInfo}
                         </div>
@@ -142,3 +142,18 @@ $(document).ready(function() {
     // 定期更新任务列表
     setInterval(updateTasks, 50000);
 }); 
+
+function getStatusClass(status) {
+    switch(status) {
+        case '等待中':
+            return 'status-waiting';
+        case '处理中':
+            return 'status-processing';
+        case '完成':
+            return 'status-complete';
+        case '失败':
+            return 'status-failed';
+        default:
+            return '';
+    }
+} 
