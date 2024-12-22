@@ -71,7 +71,10 @@ def convert_audio_to_wav(input_path, output_path):
 
 def process_output(task, pipe, is_error=False):
     """处理进程输出"""
-    for line in iter(pipe.readline, ''):
+    while True:
+        line = pipe.readline()
+        if not line:
+            break
         line = line.strip()
         if line:
             task.add_log(line)
