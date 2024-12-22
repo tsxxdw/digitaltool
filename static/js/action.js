@@ -12,16 +12,7 @@ function updateTasks() {
                             <div><strong>创建时间:</strong> ${task.create_time}</div>
                         </div>
                     </div>
-                    <div class="file-info">
-                        <div class="file-item">
-                            <span class="file-label">视频文件：</span>
-                            <span class="file-name">${task.video_name}</span>
-                        </div>
-                        <div class="file-item">
-                            <span class="file-label">音频文件：</span>
-                            <span class="file-name">${task.audio_name}</span>
-                        </div>
-                    </div>
+
                     <div class="log-container" id="log-${task.task_id}"></div>
                     ${task.output_file ? `
                         <div class="download-actions">
