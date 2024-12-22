@@ -158,12 +158,17 @@ def upload():
         if not tango_path:
             raise Exception("TANGO路径未配置")
             
+        # 打印命令
+        print("执行的命令：")
+        print(cmd)
+        task_log += f"\n执行的命令：\n{cmd}"
+            
         # 创建新任务
         task = ActionTask(task_id, converted_video_path, converted_audio_path)
         task.log.append(f"原始视频文件: {video.filename}")
         task.log.append(f"原始音频文件: {audio.filename}")
         task.log.append(task_log)
-        task.output_file = output_video  # 设置输出文件路径
+        task.output_file = output_video
         action_tasks[task_id] = task
 
         # 使用 Popen 启动进程，并捕获输出
