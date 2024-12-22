@@ -71,8 +71,8 @@ def convert_audio_to_wav(input_path, output_path):
 
 def process_output(task, pipe, is_error=False):
     """处理进程输出"""
-    for line in iter(pipe.readline, b''):
-        line = line.decode('utf-8', errors='replace').strip()
+    for line in iter(pipe.readline, ''):
+        line = line.strip()
         if line:
             task.add_log(line)
             if is_error:
@@ -147,28 +147,19 @@ def upload():
             
         if platform.system() == 'Windows':
             tango_path = config.get('windows_tango_path', '')
-            # 修改为tsxxdw子目录
-            working_dir = os.path.join(tango_path, 'tsxxdw')
-            cmd = f'cmd /c "cd /d {working_dir} && conda activate tango && python inference.py --audio_path {converted_audio_path} --video_path {converted_video_path} --save_path {upload_dir}"'
+            cmd = f'cmd /c "cd /d {tango_path} && conda activate tango && python tsxxdw/inference.py --audio_path {converted_audio_path} --video_path {converted_video_path} --save_path {upload_dir}"'
         else:
             tango_path = config.get('linux_tango_path', '')
-            # 修改为tsxxdw子目录
-            working_dir = os.path.join(tango_path, 'tsxxdw')
-            cmd = f'cd {working_dir} && source /root/miniconda3/etc/profile.d/conda.sh && conda activate tango && python inference.py --audio_path {converted_audio_path} --video_path {converted_video_path} --save_path {upload_dir}'
+            cmd = f'cd {tango_path} && source /root/miniconda3/etc/profile.d/conda.sh && conda activate tango && python tsxxdw/inference.py --audio_path {converted_audio_path} --video_path {converted_video_path} --save_path {upload_dir}'
             
         if not tango_path:
             raise Exception("TANGO路径未配置")
-            
-        # 检查工作目录是否存在
-        if not os.path.exists(working_dir):
-            raise Exception(f"工作目录不存在: {working_dir}")
             
         # 创建新任务
         task = ActionTask(task_id, converted_video_path, converted_audio_path)
         task.log.append(f"原始视频文件: {video.filename}")
         task.log.append(f"原始音频文件: {audio.filename}")
         task.log.append(task_log)
-        task.log.append(f"工作目录: {working_dir}")
         action_tasks[task_id] = task
 
         # 使用 Popen 启动进程，并捕获输出
