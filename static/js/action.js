@@ -35,10 +35,23 @@ function pollTaskStatus(taskId) {
     $.get(`/action/task_status/${taskId}`, function(response) {
         if (response.error) return;
         
-        $(`#log-${taskId}`).html(response.log.join('<br>'));
+        const logContainer = $(`#log-${taskId}`);
         
+        // 添加新的日志
+        if (response.new_logs && response.new_logs.length > 0) {
+            response.new_logs.forEach(log => {
+                logContainer.append(`<div class="log-line">${log}</div>`);
+            });
+            // 滚动到底部
+            logContainer.scrollTop(logContainer[0].scrollHeight);
+        }
+        
+        // 如果任务还在处理中，继续轮询
         if (response.status === "处理中") {
-            setTimeout(() => pollTaskStatus(taskId), 2000);
+            setTimeout(() => pollTaskStatus(taskId), 1000);
+        } else {
+            // 任务完成或失败时，更新状态
+            updateTasks();
         }
     }).fail(function(xhr) {
         console.error('获取任务状态失败:', xhr);

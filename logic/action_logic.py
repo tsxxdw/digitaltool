@@ -6,6 +6,8 @@ from datetime import datetime
 import shutil
 import json
 import platform
+import threading
+import queue
 
 bp = Blueprint('action', __name__)
 
@@ -23,6 +25,12 @@ class ActionTask:
         self.log = []
         self.output_file = None
         self.create_time = datetime.now()
+        self.process = None
+        self.log_queue = queue.Queue()
+
+    def add_log(self, message):
+        self.log.append(message)
+        self.log_queue.put(message)
 
 def get_file_extension(filename):
     """获取文件扩展名（小写）"""
@@ -60,6 +68,17 @@ def convert_audio_to_wav(input_path, output_path):
     except subprocess.CalledProcessError as e:
         print(f"音频转换错误: {e.stderr.decode()}")
         return False
+
+def process_output(task, pipe, is_error=False):
+    """处理进程输出"""
+    for line in iter(pipe.readline, b''):
+        line = line.decode('utf-8', errors='replace').strip()
+        if line:
+            task.add_log(line)
+            if is_error:
+                print(f"Error: {line}")
+            else:
+                print(f"Output: {line}")
 
 @bp.route('/action')
 def action():
@@ -119,13 +138,6 @@ def upload():
             return jsonify({'error': '音频格式转换失败'}), 400
         task_log += "\n音频已转换为WAV格式"
     
-    # 创建新任务
-    task = ActionTask(task_id, converted_video_path, converted_audio_path)
-    task.log.append(f"原始视频文件: {video.filename}")
-    task.log.append(f"原始音频文件: {audio.filename}")
-    task.log.append(task_log)
-    action_tasks[task_id] = task
-    
     # 调用外部生成项目
     try:
         # 从配置文件读取TANGO路径
@@ -135,18 +147,55 @@ def upload():
             
         if platform.system() == 'Windows':
             tango_path = config.get('windows_tango_path', '')
-            # Windows 环境下，使用 cmd 激活 conda 环境并执行命令
-            cmd = f'cmd /c "cd /d {tango_path} && conda activate tango && python inference.py --audio_path {converted_audio_path} --video_path {converted_video_path} --save_path {upload_dir}"'
+            # 修改为tsxxdw子目录
+            working_dir = os.path.join(tango_path, 'tsxxdw')
+            cmd = f'cmd /c "cd /d {working_dir} && conda activate tango && python inference.py --audio_path {converted_audio_path} --video_path {converted_video_path} --save_path {upload_dir}"'
         else:
             tango_path = config.get('linux_tango_path', '')
-            # Linux/macOS 环境下，先进入目录，然后激活环境并执行命令
-            cmd = f'cd {tango_path} && source /root/miniconda3/etc/profile.d/conda.sh && conda activate tango && python inference.py --audio_path {converted_audio_path} --video_path {converted_video_path} --save_path {upload_dir}'
+            # 修改为tsxxdw子目录
+            working_dir = os.path.join(tango_path, 'tsxxdw')
+            cmd = f'cd {working_dir} && source /root/miniconda3/etc/profile.d/conda.sh && conda activate tango && python inference.py --audio_path {converted_audio_path} --video_path {converted_video_path} --save_path {upload_dir}'
             
         if not tango_path:
             raise Exception("TANGO路径未配置")
             
-        # 使用 shell=True 来执行完整的命令字符串
-        subprocess.Popen(cmd, shell=True)
+        # 检查工作目录是否存在
+        if not os.path.exists(working_dir):
+            raise Exception(f"工作目录不存在: {working_dir}")
+            
+        # 创建新任务
+        task = ActionTask(task_id, converted_video_path, converted_audio_path)
+        task.log.append(f"原始视频文件: {video.filename}")
+        task.log.append(f"原始音频文件: {audio.filename}")
+        task.log.append(task_log)
+        task.log.append(f"工作目录: {working_dir}")
+        action_tasks[task_id] = task
+
+        # 使用 Popen 启动进程，并捕获输出
+        process = subprocess.Popen(
+            cmd,
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            bufsize=1,
+            universal_newlines=True
+        )
+        task.process = process
+
+        # 创建线程处理输出
+        stdout_thread = threading.Thread(
+            target=process_output,
+            args=(task, process.stdout, False)
+        )
+        stderr_thread = threading.Thread(
+            target=process_output,
+            args=(task, process.stderr, True)
+        )
+
+        stdout_thread.daemon = True
+        stderr_thread.daemon = True
+        stdout_thread.start()
+        stderr_thread.start()
         
     except Exception as e:
         task.log.append(f"启动任务失败: {str(e)}")
@@ -175,8 +224,26 @@ def task_status(task_id):
     if not task:
         return jsonify({'error': '任务不存在'}), 404
     
+    # 检查进程状态
+    if task.process:
+        return_code = task.process.poll()
+        if return_code is not None:
+            if return_code == 0:
+                task.status = "完成"
+            else:
+                task.status = "失败"
+    
+    # 获取新的日志消息
+    new_logs = []
+    try:
+        while True:
+            new_logs.append(task.log_queue.get_nowait())
+    except queue.Empty:
+        pass
+
     return jsonify({
         'status': task.status,
         'log': task.log,
+        'new_logs': new_logs,
         'output_file': task.output_file
     }) 
