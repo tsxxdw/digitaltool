@@ -92,16 +92,18 @@ def upload():
     video = request.files['video']
     audio = request.files['audio']
     
-    # 获取文件扩展名
-    video_ext = get_file_extension(video.filename)
-    audio_ext = get_file_extension(audio.filename)
-    
-    # 生成唯一任务ID
-    task_id = str(uuid.uuid4())
+    # 生成带时间戳的任务ID
+    current_time = datetime.now().strftime('%Y%m%d%H%M%S')
+    random_str = str(uuid.uuid4())[:6]  # 获取UUID的前6位
+    task_id = f"{current_time}-{random_str}"
     
     # 创建上传目录
     upload_dir = os.path.join('static', 'action_uploads', task_id)
     os.makedirs(upload_dir, exist_ok=True)
+    
+    # 获取文件扩展名
+    video_ext = get_file_extension(video.filename)
+    audio_ext = get_file_extension(audio.filename)
     
     # 保存原始文件
     original_video_path = os.path.join(upload_dir, 'original_' + video.filename)
