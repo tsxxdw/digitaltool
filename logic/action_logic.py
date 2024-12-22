@@ -48,12 +48,13 @@ def upload():
     # 创建新任务
     task = Task(task_id, video_path, audio_path)
     tasks[task_id] = task
-    
+
+    print("aa")
     # 启动处理进程 (这里需要替换为实际的处理脚本路径)
-    subprocess.Popen(['python', 'process_video.py', 
-                     '--video', video_path,
-                     '--audio', audio_path,
-                     '--task_id', task_id])
+    # subprocess.Popen(['python', 'process_video.py',
+    #                  '--video', video_path,
+    #                  '--audio', audio_path,
+    #                  '--task_id', task_id])
     
     return jsonify({'task_id': task_id})
 
