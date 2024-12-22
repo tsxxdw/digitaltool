@@ -36,10 +36,27 @@ class ActionTask:
         self.create_time = datetime.now()
         self.process = None
         self.log_queue = queue.Queue()
+        # 创建日志文件
+        self.log_file = os.path.join('static', 'action_uploads', task_id, 'task.log')
+        # 确保日志目录存在
+        os.makedirs(os.path.dirname(self.log_file), exist_ok=True)
 
     def add_log(self, message):
-        self.log.append(message)
-        self.log_queue.put(message)
+        """添加日志并写入文件"""
+        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        log_entry = f"[{timestamp}] {message}"
+        self.log.append(log_entry)
+        self.log_queue.put(log_entry)
+        # 写入日志文件
+        with open(self.log_file, 'a', encoding='utf-8') as f:
+            f.write(log_entry + '\n')
+
+    def load_logs(self):
+        """从文件加载日志"""
+        if os.path.exists(self.log_file):
+            with open(self.log_file, 'r', encoding='utf-8') as f:
+                self.log = [line.strip() for line in f.readlines()]
+        return self.log
 
 def get_file_extension(filename):
     """获取文件扩展名（小写）"""
@@ -80,17 +97,30 @@ def convert_audio_to_wav(input_path, output_path):
 
 def process_output(task, pipe, is_error=False):
     """处理进程输出"""
-    while True:
-        line = pipe.readline()
-        if not line:
-            break
-        line = line.strip()
-        if line:
-            task.add_log(line)
-            if is_error:
-                print(f"Error: {line}")
-            else:
-                print(f"Output: {line}")
+    try:
+        while True:
+            line = pipe.readline()
+            if not line:
+                break
+            try:
+                # 尝试使用 utf-8 解码
+                if isinstance(line, bytes):
+                    line = line.decode('utf-8', errors='replace')
+                line = line.strip()
+                if line:
+                    task.add_log(line)
+                    if is_error:
+                        print(f"Error: {line}")
+                    else:
+                        print(f"Output: {line}")
+            except UnicodeError as e:
+                error_msg = f"编码错误: {str(e)}"
+                task.add_log(error_msg)
+                print(error_msg)
+    except Exception as e:
+        error_msg = f"处理输出错误: {str(e)}"
+        task.add_log(error_msg)
+        print(error_msg)
 
 def process_task_queue():
     """处理任务队列"""
@@ -321,6 +351,9 @@ def task_status(task_id):
             else:
                 task.status = "失败"
     
+    # 加载日志文件
+    logs = task.load_logs()
+    
     # 获取新的日志消息
     new_logs = []
     try:
@@ -331,7 +364,7 @@ def task_status(task_id):
 
     return jsonify({
         'status': task.status,
-        'log': task.log,
+        'log': logs,  # 使用从文件加载的完整日志
         'new_logs': new_logs,
         'output_file': task.output_file
     }) 
