@@ -1,0 +1,62 @@
+[2024-12-22 21:44:25] 任务已加入队列，当前位置：2
+[2024-12-22 21:44:30] tango args: C:\computer\3\itproject\digitaltool\static\action_uploads\20241222214425-33063a\20241222214425-33063a.wav C:\computer\3\itproject\digitaltool\static\action_uploads\20241222214425-33063a\20241222214425-33063a.mp4 C:\computer\3\itproject\digitaltool\static\action_uploads\20241222214425-33063a\20241222214425-33063a_output.mp4
+[2024-12-22 21:44:30] 视频开始生成
+[2024-12-22 21:44:30] C:\computer\3\itproject\manyaitools_modules\TANGO\datasets/data_json/youtube_test/speaker1.json
+[2024-12-22 21:44:33] ffmpeg version 2024-06-24-git-6ec22731ae-full_build-www.gyan.dev Copyright (c) 2000-2024 the FFmpeg developers
+[2024-12-22 21:44:33] built with gcc 13.2.0 (Rev5, Built by MSYS2 project)
+[2024-12-22 21:44:33] configuration: --enable-gpl --enable-version3 --enable-static --disable-w32threads --disable-autodetect --enable-fontconfig --enable-iconv --enable-gnutls --enable-libxml2 --enable-gmp --enable-bzlib --enable-lzma --enable-libsnappy --enable-zlib --enable-librist --enable-libsrt --enable-libssh --enable-libzmq --enable-avisynth --enable-libbluray --enable-libcaca --enable-sdl2 --enable-libaribb24 --enable-libaribcaption --enable-libdav1d --enable-libdavs2 --enable-libopenjpeg --enable-libquirc --enable-libuavs3d --enable-libxevd --enable-libzvbi --enable-libqrencode --enable-librav1e --enable-libsvtav1 --enable-libwebp --enable-libx264 --enable-libx265 --enable-libxavs2 --enable-libxeve --enable-libxvid --enable-libaom --enable-libjxl --enable-libvpx --enable-mediafoundation --enable-libass --enable-frei0r --enable-libfreetype --enable-libfribidi --enable-libharfbuzz --enable-liblensfun --enable-libvidstab --enable-libvmaf --enable-libzimg --enable-amf --enable-cuda-llvm --enable-cuvid --enable-dxva2 --enable-d3d11va --enable-d3d12va --enable-ffnvcodec --enable-libvpl --enable-nvdec --enable-nvenc --enable-vaapi --enable-libshaderc --enable-vulkan --enable-libplacebo --enable-opencl --enable-libcdio --enable-libgme --enable-libmodplug --enable-libopenmpt --enable-libopencore-amrwb --enable-libmp3lame --enable-libshine --enable-libtheora --enable-libtwolame --enable-libvo-amrwbenc --enable-libcodec2 --enable-libilbc --enable-libgsm --enable-libopencore-amrnb --enable-libopus --enable-libspeex --enable-libvorbis --enable-ladspa --enable-libbs2b --enable-libflite --enable-libmysofa --enable-librubberband --enable-libsoxr --enable-chromaprint
+[2024-12-22 21:44:33] libavutil      59. 25.100 / 59. 25.100
+[2024-12-22 21:44:33] libavcodec     61.  8.100 / 61.  8.100
+[2024-12-22 21:44:33] libavformat    61.  4.100 / 61.  4.100
+[2024-12-22 21:44:33] libavdevice    61.  2.100 / 61.  2.100
+[2024-12-22 21:44:33] libavfilter    10.  2.102 / 10.  2.102
+[2024-12-22 21:44:33] libswscale      8.  2.100 /  8.  2.100
+[2024-12-22 21:44:33] libswresample   5.  2.100 /  5.  2.100
+[2024-12-22 21:44:33] libpostproc    58.  2.100 / 58.  2.100
+[2024-12-22 21:44:33] Input #0, mov,mp4,m4a,3gp,3g2,mj2, from 'C:\computer\3\itproject\manyaitools_modules\TANGO\outputs/tmpvideo\save_video_fps.mp4':
+[2024-12-22 21:44:33] Metadata:
+[2024-12-22 21:44:33] major_brand     : isom
+[2024-12-22 21:44:33] minor_version   : 512
+[2024-12-22 21:44:33] compatible_brands: isomiso2mp41
+[2024-12-22 21:44:33] encoder         : Lavf58.76.100
+[2024-12-22 21:44:33] Duration: 00:00:10.00, start: 0.000000, bitrate: 4877 kb/s
+[2024-12-22 21:44:33] Stream #0:0[0x1](und): Video: mpeg4 (Simple Profile) (mp4v / 0x7634706D), yuv420p, 720x1280 [SAR 1:1 DAR 9:16], 4875 kb/s, 30 fps, 30 tbr, 15360 tbn (default)
+[2024-12-22 21:44:33] Metadata:
+[2024-12-22 21:44:33] handler_name    : VideoHandler
+[2024-12-22 21:44:33] vendor_id       : [0][0][0][0]
+[2024-12-22 21:44:33] Stream mapping:
+[2024-12-22 21:44:33] Stream #0:0 -> #0:0 (mpeg4 (native) -> h264 (libx264))
+[2024-12-22 21:44:33] Press [q] to stop, [?] for help
+[2024-12-22 21:44:33] [libx264 @ 0000018cd180d2c0] using SAR=1/1
+[2024-12-22 21:44:33] [libx264 @ 0000018cd180d2c0] using cpu capabilities: MMX2 SSE2Fast SSSE3 SSE4.2 AVX FMA3 BMI2 AVX2
+[2024-12-22 21:44:33] [libx264 @ 0000018cd180d2c0] profile High, level 3.1, 4:2:0, 8-bit
+[2024-12-22 21:44:33] [libx264 @ 0000018cd180d2c0] 264 - core 164 r3191 4613ac3 - H.264/MPEG-4 AVC codec - Copyleft 2003-2024 - http://www.videolan.org/x264.html - options: cabac=1 ref=3 deblock=1:0:0 analyse=0x3:0x113 me=hex subme=7 psy=1 psy_rd=1.00:0.00 mixed_ref=1 me_range=16 chroma_me=1 trellis=1 8x8dct=1 cqm=0 deadzone=21,11 fast_pskip=1 chroma_qp_offset=-2 threads=24 lookahead_threads=4 sliced_threads=0 nr=0 decimate=1 interlaced=0 bluray_compat=0 constrained_intra=0 bframes=3 b_pyramid=2 b_adapt=1 b_bias=0 direct=1 weightb=1 open_gop=0 weightp=2 keyint=250 keyint_min=25 scenecut=40 intra_refresh=0 rc_lookahead=40 rc=crf mbtree=1 crf=23.0 qcomp=0.60 qpmin=0 qpmax=69 qpstep=4 ip_ratio=1.40 aq=1:1.00
+[2024-12-22 21:44:33] Output #0, mp4, to 'C:\computer\3\itproject\manyaitools_modules\TANGO\outputs/tmpvideo\save_video.mp4':
+[2024-12-22 21:44:33] Metadata:
+[2024-12-22 21:44:33] major_brand     : isom
+[2024-12-22 21:44:33] minor_version   : 512
+[2024-12-22 21:44:33] compatible_brands: isomiso2mp41
+[2024-12-22 21:44:33] encoder         : Lavf61.4.100
+[2024-12-22 21:44:33] Stream #0:0(und): Video: h264 (avc1 / 0x31637661), yuv420p(progressive), 720x1280 [SAR 1:1 DAR 9:16], q=2-31, 30 fps, 15360 tbn (default)
+[2024-12-22 21:44:33] Metadata:
+[2024-12-22 21:44:33] handler_name    : VideoHandler
+[2024-12-22 21:44:33] vendor_id       : [0][0][0][0]
+[2024-12-22 21:44:33] encoder         : Lavc61.8.100 libx264
+[2024-12-22 21:44:33] Side data:
+[2024-12-22 21:44:33] cpb: bitrate max/min/avg: 0/0/0 buffer size: 0 vbv_delay: N/A
+[2024-12-22 21:44:34] frame=    0 fps=0.0 q=0.0 size=       0KiB time=N/A bitrate=N/A speed=N/A
+[2024-12-22 21:44:34] frame=    0 fps=0.0 q=0.0 size=       0KiB time=N/A bitrate=N/A speed=N/A
+[2024-12-22 21:44:35] frame=    0 fps=0.0 q=0.0 size=       0KiB time=N/A bitrate=N/A speed=N/A
+[2024-12-22 21:44:35] frame=    0 fps=0.0 q=0.0 size=       0KiB time=N/A bitrate=N/A speed=N/A
+[2024-12-22 21:44:36] frame=    0 fps=0.0 q=0.0 size=       0KiB time=N/A bitrate=N/A speed=N/A
+[2024-12-22 21:44:36] frame=    0 fps=0.0 q=0.0 size=       0KiB time=N/A bitrate=N/A speed=N/A
+[2024-12-22 21:44:37] frame=    0 fps=0.0 q=0.0 size=       0KiB time=N/A bitrate=N/A speed=N/A
+[2024-12-22 21:44:37] frame=    0 fps=0.0 q=0.0 size=       0KiB time=N/A bitrate=N/A speed=N/A
+[2024-12-22 21:44:38] frame=    0 fps=0.0 q=0.0 size=       0KiB time=N/A bitrate=N/A speed=N/A
+[2024-12-22 21:44:38] frame=    0 fps=0.0 q=0.0 size=       0KiB time=N/A bitrate=N/A speed=N/A
+[2024-12-22 21:44:39] frame=    5 fps=0.9 q=29.0 size=       0KiB time=00:00:00.10 bitrate=   3.8kbits/s speed=0.0176x
+[2024-12-22 21:44:39] frame=   12 fps=1.9 q=29.0 size=       0KiB time=00:00:00.33 bitrate=   1.2kbits/s speed=0.0538x
+[2024-12-22 21:44:40] frame=   20 fps=3.0 q=29.0 size=       0KiB time=00:00:00.60 bitrate=   0.6kbits/s speed=0.0895x
+[2024-12-22 21:44:40] frame=   27 fps=3.7 q=29.0 size=     256KiB time=00:00:00.83 bitrate=2517.0kbits/s speed=0.115x
+[2024-12-22 21:44:41] frame=   33 fps=4.3 q=29.0 size=     256KiB time=00:00:01.03 bitrate=2029.9kbits/s speed=0.134x
+[2024-12-22 21:44:41] frame=   39 fps=4.7 q=29.0 size=     256KiB time=00:00:01.23 bitrate=1700.7kbits/s speed=0.15x

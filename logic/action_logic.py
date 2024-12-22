@@ -448,7 +448,7 @@ def task_status(task_id):
             else:
                 task.status = "失败"
     
-    # 加载日志文件
+    # 加载历史日志
     logs = task.load_logs()
     
     # 获取新的日志消息
@@ -458,10 +458,22 @@ def task_status(task_id):
             new_logs.append(task.log_queue.get_nowait())
     except queue.Empty:
         pass
-
-    return jsonify({
-        'status': task.status,
-        'log': logs,  # 使用从文件加载的完整日志
-        'new_logs': new_logs,
-        'output_file': task.output_file
-    }) 
+    
+    # 如果是页面刷新（通过查询参数判断）
+    is_refresh = request.args.get('refresh', 'false') == 'true'
+    if is_refresh:
+        # 返回完整的历史日志
+        return jsonify({
+            'status': task.status,
+            'log': logs,
+            'new_logs': [],  # 页面刷新时不需要新日志
+            'output_file': task.output_file
+        })
+    else:
+        # 正常轮询时只返回新日志
+        return jsonify({
+            'status': task.status,
+            'log': [],  # 正常轮询时不需要历史日志
+            'new_logs': new_logs,
+            'output_file': task.output_file
+        }) 

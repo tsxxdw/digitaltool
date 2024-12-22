@@ -39,49 +39,58 @@ function updateTasks() {
             `;
             $('#taskContainer').append(taskHtml);
             
-            // 获取任务状态和日志
-            pollTaskStatus(task.task_id);
+            // 获取任务状态和日志（页面刷新模式）
+            pollTaskStatus(task.task_id, true);
         });
         
-        // 根据是否有正在进行的任务决定下次更新的间隔
+        // 设置下次更新的间隔
         const hasActiveTasks = tasks.some(task => 
             task.status !== "完成" && task.status !== "失败"
         );
-        
-        // 设置下次更新的间隔
         setTimeout(updateTasks, hasActiveTasks ? POLLING_INTERVAL : COMPLETED_POLLING_INTERVAL);
     });
 }
 
 // 轮询任务状态
-function pollTaskStatus(taskId) {
-    $.get(`/action/task_status/${taskId}`, function(response) {
+function pollTaskStatus(taskId, isRefresh = false) {
+    const url = isRefresh 
+        ? `/action/task_status/${taskId}?refresh=true`
+        : `/action/task_status/${taskId}`;
+
+    $.get(url, function(response) {
         if (response.error) return;
         
         const logContainer = $(`#log-${taskId}`);
         
-        // 添加新的日志
-        if (response.new_logs && response.new_logs.length > 0) {
+        // 如果是页面刷新，清空并显示完整的历史日志
+        if (isRefresh) {
+            logContainer.empty();
+            response.log.forEach(log => {
+                logContainer.append(`<div class="log-line">${log}</div>`);
+            });
+        }
+        // 否则只添加新的日志
+        else if (response.new_logs && response.new_logs.length > 0) {
             response.new_logs.forEach(log => {
                 logContainer.append(`<div class="log-line">${log}</div>`);
             });
-            // 滚动到底部
-            logContainer.scrollTop(logContainer[0].scrollHeight);
         }
+        
+        // 滚动到底部
+        logContainer.scrollTop(logContainer[0].scrollHeight);
         
         // 根据任务状态决定下次轮询的间隔
         const interval = (response.status === "完成" || response.status === "失败") 
             ? COMPLETED_POLLING_INTERVAL 
             : POLLING_INTERVAL;
         
-        // 如果任务还在进行中，继续轮询
+        // 如果任务还在进行中，继续轮询（非刷新模式）
         if (response.status !== "完成" && response.status !== "失败") {
-            setTimeout(() => pollTaskStatus(taskId), interval);
+            setTimeout(() => pollTaskStatus(taskId, false), interval);
         }
     }).fail(function(xhr) {
         console.error('获取任务状态失败:', xhr);
-        // 发生错误时，使用较长的轮询间隔
-        setTimeout(() => pollTaskStatus(taskId), COMPLETED_POLLING_INTERVAL);
+        setTimeout(() => pollTaskStatus(taskId, false), COMPLETED_POLLING_INTERVAL);
     });
 }
 
