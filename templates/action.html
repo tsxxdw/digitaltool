@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>数字人动作生成</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/action.css') }}">
+</head>
+<body>
+    <h1>数字人动作生成</h1>
+    
+    <div class="upload-form">
+        <form id="uploadForm">
+            <div class="form-group">
+                <label>视频文件：</label>
+                <input type="file" name="video" accept="video/*" required>
+            </div>
+            <div class="form-group">
+                <label>音频文件：</label>
+                <input type="file" name="audio" accept="audio/*" required>
+            </div>
+            <button type="submit">开始生成</button>
+        </form>
+    </div>
+
+    <div class="task-list">
+        <h2>任务列表</h2>
+        <div id="taskContainer"></div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="{{ url_for('static', filename='js/action.js') }}"></script>
+</body>
+</html> 

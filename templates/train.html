@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>口唇同步预训练</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/train.css') }}">
+</head>
+<body>
+    <h1>口唇同步预训练</h1>
+    
+    <div class="train-form">
+        <form id="trainForm">
+            <div class="form-group">
+                <label>训练视频：</label>
+                <input type="file" name="video" accept="video/*" required>
+                <small>支持格式：MP4, AVI, MOV</small>
+            </div>
+            <div class="form-group">
+                <label>训练音频：</label>
+                <input type="file" name="audio" accept="audio/*" required>
+                <small>支持格式：MP3, WAV</small>
+            </div>
+            <button type="submit">开始训练</button>
+        </form>
+    </div>
+
+    <div class="task-list">
+        <h2>训练任务列表</h2>
+        <div id="taskContainer"></div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="{{ url_for('static', filename='js/train.js') }}"></script>
+</body>
+</html> 

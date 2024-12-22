@@ -1,115 +1,19 @@
 body {
     font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 20px;
-    background-color: #f4f4f4;
-}
-/* 其他已有样式 */
-
-.action-generating {
-    background-color: #e67e22;
-    color: white;
+    margin: 20px;
 }
 
-.lip-syncing {
-    background-color: #9b59b6;
-    color: white;
+nav ul {
+    list-style: none;
+    padding: 0;
 }
 
-.completed {
-    background-color: #4CAF50;
-    color: white;
-}
-.container {
-    max-width: 800px;
-    margin: 0 auto;
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+nav ul li {
+    display: inline;
+    margin-right: 20px;
 }
 
-h1 {
-    text-align: center;
+nav ul li a {
+    text-decoration: none;
     color: #333;
-}
-
-form {
-    margin-bottom: 20px;
-}
-
-input[type="file"], input[type="text"] {
-    padding: 8px;
-    margin-bottom: 10px;
-    width: 100%;
-    max-width: 400px;
-}
-
-button {
-    padding: 10px 20px;
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    cursor: pointer;
-    border-radius: 5px;
-}
-
-button:hover {
-    background-color: #45a049;
-}
-
-#uploadStatus, #taskStatus, #downloadStatus {
-    margin-top: 20px;
-    font-weight: bold;
-    color: #555;
-}
-
-/* 任务状态样式 */
-.status-waiting {
-    color: #f39c12;  /* 黄色，表示等待中 */
-    font-weight: bold;
-}
-
-.status-processing {
-    color: #3498db;  /* 蓝色，表示正在处理中 */
-    font-weight: bold;
-}
-
-.status-action-generating {
-    color: #e67e22;  /* 橙色，表示动作生成中 */
-    font-weight: bold;
-}
-
-.status-lip-syncing {
-    color: #9b59b6;  /* 紫色，表示口唇同步中 */
-    font-weight: bold;
-}
-
-.status-completed {
-    color: #2ecc71;  /* 绿色，表示已完成 */
-    font-weight: bold;
-}
-
-/* 任务列表样式 */
-.task-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-    padding: 10px;
-    background-color: #f9f9f9;
-    border-radius: 5px;
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
-}
-
-.task-item button {
-    background-color: #3498db;
-    border-radius: 5px;
-    padding: 5px 10px;
-    color: white;
-    cursor: pointer;
-}
-
-.task-item button:hover {
-    background-color: #2980b9;
-}
+} 

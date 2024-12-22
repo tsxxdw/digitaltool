@@ -1,0 +1,68 @@
+.train-form {
+    margin: 20px 0;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.form-group input[type="file"] {
+    width: 100%;
+    padding: 5px;
+}
+
+button[type="submit"] {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button[type="submit"]:hover {
+    background-color: #45a049;
+}
+
+.task-list {
+    margin-top: 30px;
+}
+
+.task-item {
+    margin-bottom: 15px;
+    padding: 15px;
+    border: 1px solid #eee;
+    border-radius: 5px;
+    background-color: #fff;
+}
+
+.log-container {
+    margin-top: 10px;
+    padding: 10px;
+    background-color: #f5f5f5;
+    border-radius: 3px;
+    max-height: 150px;
+    overflow-y: auto;
+    font-family: monospace;
+    font-size: 14px;
+}
+
+.status-complete {
+    color: #4CAF50;
+    font-weight: bold;
+}
+
+.status-training {
+    color: #2196F3;
+    font-weight: bold;
+} 
