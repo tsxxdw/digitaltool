@@ -24,6 +24,10 @@ class ActionTask:
         self.output_file = None
         self.create_time = datetime.now()
 
+def get_file_extension(filename):
+    """获取文件扩展名（小写）"""
+    return os.path.splitext(filename)[1].lower()
+
 def convert_video_to_mp4(input_path, output_path):
     """将视频转换为MP4格式"""
     try:
@@ -45,10 +49,10 @@ def convert_audio_to_wav(input_path, output_path):
     try:
         subprocess.run([
             'ffmpeg', '-i', input_path,
-            '-vn',  # 不处理视频
-            '-acodec', 'pcm_s16le',  # 16位PCM编码
-            '-ar', '44100',  # 采样率44.1kHz
-            '-ac', '2',  # 双声道
+            '-vn',
+            '-acodec', 'pcm_s16le',
+            '-ar', '44100',
+            '-ac', '2',
             '-y',
             output_path
         ], check=True, capture_output=True)
@@ -69,6 +73,10 @@ def upload():
     video = request.files['video']
     audio = request.files['audio']
     
+    # 获取文件扩展名
+    video_ext = get_file_extension(video.filename)
+    audio_ext = get_file_extension(audio.filename)
+    
     # 生成唯一任务ID
     task_id = str(uuid.uuid4())
     
@@ -84,24 +92,38 @@ def upload():
     audio.save(original_audio_path)
     
     # 转换后的文件路径
-    converted_video_path = os.path.join(upload_dir, 'input_video.mp4')
-    converted_audio_path = os.path.join(upload_dir, 'input_audio.wav')  # 改为WAV格式
+    converted_video_path = os.path.join(upload_dir, f'{task_id}.mp4')
+    converted_audio_path = os.path.join(upload_dir, f'{task_id}.wav')
     
-    # 转换视频格式
-    if not convert_video_to_mp4(original_video_path, converted_video_path):
-        shutil.rmtree(upload_dir)  # 清理临时文件
-        return jsonify({'error': '视频格式转换失败'}), 400
-        
-    # 转换音频格式为WAV
-    if not convert_audio_to_wav(original_audio_path, converted_audio_path):
-        shutil.rmtree(upload_dir)  # 清理临时文件
-        return jsonify({'error': '音频格式转换失败'}), 400
+    # 处理视频文件
+    if video_ext == '.mp4':
+        # 如果已经是MP4格式，直接复制
+        shutil.copy2(original_video_path, converted_video_path)
+        task_log = "视频已经是MP4格式，无需转换"
+    else:
+        # 需要转换为MP4格式
+        if not convert_video_to_mp4(original_video_path, converted_video_path):
+            shutil.rmtree(upload_dir)  # 清理临时文件
+            return jsonify({'error': '视频格式转换失败'}), 400
+        task_log = "视频已转换为MP4格式"
+    
+    # 处理音频文件
+    if audio_ext == '.wav':
+        # 如果已经是WAV格式，直接复制
+        shutil.copy2(original_audio_path, converted_audio_path)
+        task_log += "\n音频已经是WAV格式，无需转换"
+    else:
+        # 需要转换为WAV格式
+        if not convert_audio_to_wav(original_audio_path, converted_audio_path):
+            shutil.rmtree(upload_dir)  # 清理临时文件
+            return jsonify({'error': '音频格式转换失败'}), 400
+        task_log += "\n音频已转换为WAV格式"
     
     # 创建新任务
     task = ActionTask(task_id, converted_video_path, converted_audio_path)
     task.log.append(f"原始视频文件: {video.filename}")
     task.log.append(f"原始音频文件: {audio.filename}")
-    task.log.append("文件格式转换完成")
+    task.log.append(task_log)
     action_tasks[task_id] = task
     
     # 调用外部生成项目

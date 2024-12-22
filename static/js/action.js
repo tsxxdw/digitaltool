@@ -41,7 +41,7 @@ function updateTasks() {
 
 // 轮询任务状态
 function pollTaskStatus(taskId) {
-    $.get(`/task_status/${taskId}`, function(response) {
+    $.get(`/action/task_status/${taskId}`, function(response) {
         if (response.error) return;
         
         $(`#log-${taskId}`).html(response.log.join('<br>'));
@@ -49,31 +49,76 @@ function pollTaskStatus(taskId) {
         if (response.status === "处理中") {
             setTimeout(() => pollTaskStatus(taskId), 2000);
         }
+    }).fail(function(xhr) {
+        console.error('获取任务状态失败:', xhr);
     });
 }
 
 // 页面加载完成后执行
 $(document).ready(function() {
-    // 处理表单提交
     $('#uploadForm').submit(function(e) {
         e.preventDefault();
         
-        let formData = new FormData(this);
+        const formData = new FormData(this);
+        const submitButton = $(this).find('button[type="submit"]');
+        
+        // 禁用提交按钮
+        submitButton.prop('disabled', true);
+        submitButton.text('上传中...');
         
         $.ajax({
-            url: '/upload',
+            url: '/action/upload',
             type: 'POST',
             data: formData,
             processData: false,
             contentType: false,
             success: function(response) {
-                alert('任务已提交，任务ID: ' + response.task_id);
+                alert('上传成功，任务ID: ' + response.task_id);
                 updateTasks();
             },
             error: function(xhr) {
-                alert('提交失败: ' + xhr.responseJSON.error);
+                let errorMessage = '上传失败';
+                if (xhr.responseJSON && xhr.responseJSON.error) {
+                    errorMessage += ': ' + xhr.responseJSON.error;
+                }
+                alert(errorMessage);
+            },
+            complete: function() {
+                // 恢复提交按钮
+                submitButton.prop('disabled', false);
+                submitButton.text('开始生成');
             }
         });
+    });
+
+    // 显示下载链接
+    window.showDownloadLink = function(url) {
+        const modal = $('#linkModal');
+        $('#downloadLink').text(window.location.origin + '/' + url);
+        modal.show();
+    }
+
+    // 复制下载链接
+    window.copyDownloadLink = function() {
+        const linkText = $('#downloadLink').text();
+        navigator.clipboard.writeText(linkText).then(function() {
+            alert('链接已复制到剪贴板');
+        }).catch(function(err) {
+            console.error('复制失败:', err);
+            alert('复制失败，请手动复制');
+        });
+    }
+
+    // 关闭模态框
+    $('.close').click(function() {
+        $('#linkModal').hide();
+    });
+    
+    // 点击模态框外部关闭
+    $(window).click(function(e) {
+        if (e.target == document.getElementById('linkModal')) {
+            $('#linkModal').hide();
+        }
     });
 
     // 页面加载时更新任务列表
