@@ -12,12 +12,12 @@ from flask import Flask, request, jsonify, send_from_directory, render_template
 os_type = platform.system()
 if os_type == "Windows":
     # 文件存储目录
-    UPLOAD_FOLDER = r'C:\computer\3\itproject\digitaltool\digitaltool\uploads'
-    ACT_FOLDER = r'C:\computer\3\itproject\digitaltool\digitaltool\act'
-    OUT_FOLDER = r'C:\computer\3\itproject\digitaltool\digitaltool\out'
+    UPLOAD_FOLDER = r'C:\computer\3\itproject\digitaltool\uploads'
+    ACT_FOLDER = r'C:\computer\3\itproject\digitaltool\act'
+    OUT_FOLDER = r'C:\computer\3\itproject\digitaltool\out'
     TANNN = r"C:\computer\3\itproject\The_Digital_Human_TANGO\TANGO"
     MUSETALK = r"C:\computer\3\itproject\MuseTalk"
-    DIGITALTOOL = r"C:\computer\3\itproject\digitaltool\digitaltool"
+    DIGITALTOOL = r"C:\computer\3\itproject\digitaltool"
 else:
     UPLOAD_FOLDER = r'/root/onethingai-fs/digitaltool/uploads'
     ACT_FOLDER = r'/root/onethingai-fs/digitaltool/act'
