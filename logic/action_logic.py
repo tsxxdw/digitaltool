@@ -140,20 +140,27 @@ def upload():
     
     # 调用外部生成项目
     try:
+        # 获取当前项目的根目录
+        current_dir = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
+        
         # 从配置文件读取TANGO路径
         config_file = os.path.join('config', 'system_setting.json')
         with open(config_file, 'r') as f:
             config = json.load(f)
             
-        # 设置输出文件路径
-        output_video = os.path.join(upload_dir, f'{task_id}_output.mp4')
+        # 设置输出文件路径（使用绝对路径）
+        output_video = os.path.abspath(os.path.join(current_dir, upload_dir, f'{task_id}_output.mp4'))
+        
+        # 转换音频和视频路径为绝对路径
+        converted_audio_path_abs = os.path.abspath(converted_audio_path)
+        converted_video_path_abs = os.path.abspath(converted_video_path)
             
         if platform.system() == 'Windows':
             tango_path = config.get('windows_tango_path', '')
-            cmd = f'cmd /c "cd /d {tango_path} && conda activate tango && python tsxxdw/inference.py --audio_path {converted_audio_path} --video_path {converted_video_path} --save_path {output_video}"'
+            cmd = f'cmd /c "cd /d {tango_path} && conda activate tango && python tsxxdw/inference.py --audio_path {converted_audio_path_abs} --video_path {converted_video_path_abs} --save_path {output_video}"'
         else:
             tango_path = config.get('linux_tango_path', '')
-            cmd = f'cd {tango_path} && source /root/miniconda3/etc/profile.d/conda.sh && conda activate tango && python tsxxdw/inference.py --audio_path {converted_audio_path} --video_path {converted_video_path} --save_path {output_video}'
+            cmd = f'cd {tango_path} && source /root/miniconda3/etc/profile.d/conda.sh && conda activate tango && python tsxxdw/inference.py --audio_path {converted_audio_path_abs} --video_path {converted_video_path_abs} --save_path {output_video}'
             
         if not tango_path:
             raise Exception("TANGO路径未配置")
@@ -161,7 +168,15 @@ def upload():
         # 打印命令
         print("执行的命令：")
         print(cmd)
+        print("文件路径：")
+        print(f"音频文件: {converted_audio_path_abs}")
+        print(f"视频文件: {converted_video_path_abs}")
+        print(f"输出文件: {output_video}")
+        
         task_log += f"\n执行的命令：\n{cmd}"
+        task_log += f"\n音频文件: {converted_audio_path_abs}"
+        task_log += f"\n视频文件: {converted_video_path_abs}"
+        task_log += f"\n输出文件: {output_video}"
             
         # 创建新任务
         task = ActionTask(task_id, converted_video_path, converted_audio_path)
