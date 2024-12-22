@@ -145,12 +145,15 @@ def upload():
         with open(config_file, 'r') as f:
             config = json.load(f)
             
+        # 设置输出文件路径
+        output_video = os.path.join(upload_dir, f'{task_id}_output.mp4')
+            
         if platform.system() == 'Windows':
             tango_path = config.get('windows_tango_path', '')
-            cmd = f'cmd /c "cd /d {tango_path} && conda activate tango && python tsxxdw/inference.py --audio_path {converted_audio_path} --video_path {converted_video_path} --save_path {upload_dir}"'
+            cmd = f'cmd /c "cd /d {tango_path} && conda activate tango && python tsxxdw/inference.py --audio_path {converted_audio_path} --video_path {converted_video_path} --save_path {output_video}"'
         else:
             tango_path = config.get('linux_tango_path', '')
-            cmd = f'cd {tango_path} && source /root/miniconda3/etc/profile.d/conda.sh && conda activate tango && python tsxxdw/inference.py --audio_path {converted_audio_path} --video_path {converted_video_path} --save_path {upload_dir}'
+            cmd = f'cd {tango_path} && source /root/miniconda3/etc/profile.d/conda.sh && conda activate tango && python tsxxdw/inference.py --audio_path {converted_audio_path} --video_path {converted_video_path} --save_path {output_video}'
             
         if not tango_path:
             raise Exception("TANGO路径未配置")
@@ -160,6 +163,7 @@ def upload():
         task.log.append(f"原始视频文件: {video.filename}")
         task.log.append(f"原始音频文件: {audio.filename}")
         task.log.append(task_log)
+        task.output_file = output_video  # 设置输出文件路径
         action_tasks[task_id] = task
 
         # 使用 Popen 启动进程，并捕获输出

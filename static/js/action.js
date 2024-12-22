@@ -129,5 +129,5 @@ $(document).ready(function() {
     updateTasks();
     
     // 定期更新任务列表
-    setInterval(updateTasks, 5000);
+    setInterval(updateTasks, 50000);
 }); 
