@@ -40,8 +40,8 @@ function renderTasks() {
                         </div>
                         <div><strong>状态:</strong> <span class="status-badge ${getStatusClass(task.status)}">${task.status}</span></div>
                         <div><strong>创建时间:</strong> ${task.create_time}</div>
-                        <div><strong>视频文件:</strong> ${task.video_name}</div>
-                        <div><strong>音频文件:</strong> ${task.audio_name}</div>
+                        <div><strong>原始视频:</strong> ${task.video_name}</div>
+                        <div><strong>原始音频:</strong> ${task.audio_name}</div>
                     </div>
                     ${task.status === "已完成" ? 
                         `<button class="delete-btn" onclick="deleteTask('${task.id}')">×</button>` : 

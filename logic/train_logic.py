@@ -29,8 +29,10 @@ class TrainTask:
     def __init__(self, task_id, name, video_name, audio_name):
         self.task_id = task_id
         self.name = name
-        self.video_name = video_name
-        self.audio_name = audio_name
+        self.video_name = video_name          # 原始视频文件名
+        self.audio_name = audio_name          # 原始音频文件名
+        self.new_video_name = f"{task_id}.mp4"  # 新的视频文件名
+        self.new_audio_name = f"{task_id}.wav"  # 新的音频文件名
         self.yaml_file = f"{task_id}.yaml"
         self.log_file = f"{task_id}.log"
         self.status = "等待中"
@@ -44,8 +46,10 @@ class TrainTask:
             "status": self.status,
             "log_file": self.log_file,
             "create_time": self.create_time,
-            "video_name": self.video_name,
-            "audio_name": self.audio_name
+            "video_name": self.video_name,        # 原始视频文件名
+            "audio_name": self.audio_name,        # 原始音频文件名
+            "new_video_name": self.new_video_name,  # 新的视频文件名
+            "new_audio_name": self.new_audio_name   # 新的音频文件名
         }
 
 def load_config():
