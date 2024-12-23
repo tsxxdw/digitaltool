@@ -1,6 +1,0 @@
-avator_1:
-  preparation: True
-  bbox_shift: 5
-  video_path: 20241223202816_0369.mp4
-  audio_clips:
-    audio_0: 20241223202816_0369.wav

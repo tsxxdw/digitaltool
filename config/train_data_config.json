@@ -1,13 +1,13 @@
 {
-    "20241223202816_0369": {
-        "name": "1231",
-        "yaml_file": "20241223202816_0369.yaml",
+    "20241223220623_0234": {
+        "name": "24",
+        "yaml_file": "C:\\computer\\3\\itproject\\digitaltool\\static\\train\\20241223220623_0234\\20241223220623_0234.yaml",
         "status": "训练中",
-        "log_file": "20241223202816_0369.log",
-        "create_time": "2024-12-23 20:28:16",
-        "video_name": "1 - 副本 (5).mp4",
-        "audio_name": "1 - 副本 (5).WAV",
-        "new_video_name": "20241223202816_0369.mp4",
-        "new_audio_name": "20241223202816_0369.wav"
+        "log_file": "C:\\computer\\3\\itproject\\digitaltool\\static\\train\\20241223220623_0234\\20241223220623_0234.log",
+        "create_time": "2024-12-23 22:06:23",
+        "video_name": "1 - 副本 (4).mp4",
+        "audio_name": "1 - 副本.WAV",
+        "new_video_name": "C:\\computer\\3\\itproject\\digitaltool\\static\\train\\20241223220623_0234\\20241223220623_0234.mp4",
+        "new_audio_name": "C:\\computer\\3\\itproject\\digitaltool\\static\\train\\20241223220623_0234\\20241223220623_0234.wav"
     }
 }

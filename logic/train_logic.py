@@ -13,10 +13,13 @@ import platform
 
 bp = Blueprint('train', __name__)
 
+# 获取项目根目录路径
+ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+
 # 配置文件路径
-CONFIG_FILE = 'config/train_data_config.json'
-SYSTEM_SETTINGS_FILE = 'config/system_setting.json'
-TRAIN_DIR = 'static/train'
+CONFIG_FILE = os.path.join(ROOT_DIR, 'config/train_data_config.json')
+SYSTEM_SETTINGS_FILE = os.path.join(ROOT_DIR, 'config/system_setting.json')
+TRAIN_DIR = os.path.join(ROOT_DIR, 'static/train')
 
 # 确保目录存在
 os.makedirs('config', exist_ok=True)
@@ -50,12 +53,16 @@ class TrainTask:
     def __init__(self, task_id, name, video_name, audio_name):
         self.task_id = task_id
         self.name = name
-        self.video_name = video_name          # 原始视频文件名
-        self.audio_name = audio_name          # 原始音频文件名
-        self.new_video_name = f"{task_id}.mp4"  # 新的视频文件名
-        self.new_audio_name = f"{task_id}.wav"  # 新的音频文件名
-        self.yaml_file = f"{task_id}.yaml"
-        self.log_file = f"{task_id}.log"
+        self.video_name = video_name
+        self.audio_name = audio_name
+        
+        # 使用绝对路径
+        task_dir = os.path.join(TRAIN_DIR, task_id)
+        self.new_video_name = os.path.abspath(os.path.join(task_dir, f"{task_id}.mp4"))  # 完整的视频文件路径
+        self.new_audio_name = os.path.abspath(os.path.join(task_dir, f"{task_id}.wav"))  # 完整的音频文件路径
+        self.yaml_file = os.path.abspath(os.path.join(task_dir, f"{task_id}.yaml"))
+        self.log_file = os.path.abspath(os.path.join(task_dir, f"{task_id}.log"))
+        
         self.status = "等待中"
         self.create_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         self.process = None
@@ -67,10 +74,10 @@ class TrainTask:
             "status": self.status,
             "log_file": self.log_file,
             "create_time": self.create_time,
-            "video_name": self.video_name,        # 原始视频文件名
-            "audio_name": self.audio_name,        # 原始音频文件名
-            "new_video_name": self.new_video_name,  # 新的视频文件名
-            "new_audio_name": self.new_audio_name   # 新的音频文件名
+            "video_name": self.video_name,
+            "audio_name": self.audio_name,
+            "new_video_name": self.new_video_name,  # 现在是完整的绝对路径
+            "new_audio_name": self.new_audio_name   # 现在是完整的绝对路径
         }
 
 def load_config():
@@ -127,7 +134,7 @@ def convert_audio(input_file, output_path):
 
 def create_yaml_file(task_id, new_video_name, new_audio_name):
     """创建YAML配置文件"""
-    yaml_content = f"""avator_1:
+    yaml_content = f"""{task_id}:
   preparation: True
   bbox_shift: 5
   video_path: {new_video_name}
