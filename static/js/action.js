@@ -180,9 +180,12 @@ function getStatusClass(status) {
     }
 }
 
-// 添加复制链接功能
+// 修改复制链接功能
 function copyDownloadLink(filePath) {
-    const fullUrl = `${window.location.origin}/static/${filePath}`;
+    // 将反斜杠替换为正斜杠，并确保路径格式正确
+    const normalizedPath = filePath.replace(/\\/g, '/');
+    const fullUrl = `${window.location.origin}/static/${normalizedPath}`;
+    
     navigator.clipboard.writeText(fullUrl).then(function() {
         alert('下载链接已复制到剪贴板');
     }).catch(function(err) {

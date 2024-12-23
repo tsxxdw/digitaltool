@@ -252,12 +252,18 @@ def process_task_queue():
             if process:
                 process.wait()
                 
-                # 检查进程返回码和输出文件是否存在
                 if process.returncode == 0 and os.path.exists(current_task.output_file):
                     current_task.status = "完成"
-                    # 将输出文件路径转换为相对于静态目录的URL路径
+                    # 获取相对路径
                     relative_path = os.path.relpath(current_task.output_file, 'static')
-                    current_task.output_file = relative_path
+                    
+                    # 不管是什么操作系统，都转换为网络路径格式（使用正斜杠）
+                    if platform.system() == 'Windows':
+                        url_path = relative_path.replace('\\', '/')
+                    else:
+                        url_path = relative_path  # Linux 下已经是正斜杠，无需转换
+                        
+                    current_task.output_file = url_path
                     current_task.add_log("任务处理完成")
                 else:
                     current_task.status = "失败"
