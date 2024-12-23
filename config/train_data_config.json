@@ -1,24 +1,14 @@
 {
-    "20241223222809_cabv": {
-        "name": "453r",
-        "yaml_file": "C:\\computer\\3\\itproject\\digitaltool\\static\\train\\20241223222809_cabv\\20241223222809_cabv.yaml",
+    "20241223225010_qmur": {
+        "name": "3423",
+        "yaml_file": "C:\\computer\\3\\itproject\\digitaltool\\static\\train\\20241223225010_qmur\\20241223225010_qmur.yaml",
         "status": "训练中",
-        "log_file": "C:\\computer\\3\\itproject\\digitaltool\\static\\train\\20241223222809_cabv\\20241223222809_cabv.log",
-        "create_time": "2024-12-23 22:28:09",
+        "log_file": "C:\\computer\\3\\itproject\\digitaltool\\static\\train\\20241223225010_qmur\\20241223225010_qmur.log",
+        "create_time": "2024-12-23 22:50:10",
         "video_name": "1 - 副本 (4).mp4",
-        "audio_name": "1-副本 (6).WAV",
-        "new_video_name": "C:\\computer\\3\\itproject\\digitaltool\\static\\train\\20241223222809_cabv\\20241223222809_cabv.mp4",
-        "new_audio_name": "C:\\computer\\3\\itproject\\digitaltool\\static\\train\\20241223222809_cabv\\20241223222809_cabv.wav"
-    },
-    "20241223222931_qkun": {
-        "name": "1231",
-        "yaml_file": "C:\\computer\\3\\itproject\\digitaltool\\static\\train\\20241223222931_qkun\\20241223222931_qkun.yaml",
-        "status": "等待中",
-        "log_file": "C:\\computer\\3\\itproject\\digitaltool\\static\\train\\20241223222931_qkun\\20241223222931_qkun.log",
-        "create_time": "2024-12-23 22:29:31",
-        "video_name": "1 - 副本 (4).mp4",
-        "audio_name": "1-副本(2).WAV",
-        "new_video_name": "C:\\computer\\3\\itproject\\digitaltool\\static\\train\\20241223222931_qkun\\20241223222931_qkun.mp4",
-        "new_audio_name": "C:\\computer\\3\\itproject\\digitaltool\\static\\train\\20241223222931_qkun\\20241223222931_qkun.wav"
+        "audio_name": "1 - 副本 (4).WAV",
+        "new_video_name": "C:\\computer\\3\\itproject\\digitaltool\\static\\train\\20241223225010_qmur\\20241223225010_qmur.mp4",
+        "new_audio_name": "C:\\computer\\3\\itproject\\digitaltool\\static\\train\\20241223225010_qmur\\20241223225010_qmur.wav",
+        "save_path": "C:\\computer\\3\\itproject\\digitaltool\\static\\train\\20241223225010_qmur\\new_20241223225010_qmur.mp4"
     }
 }

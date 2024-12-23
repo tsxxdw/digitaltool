@@ -60,10 +60,12 @@ class TrainTask:
         
         # 使用绝对路径
         task_dir = os.path.join(TRAIN_DIR, task_id)
-        self.new_video_name = os.path.abspath(os.path.join(task_dir, f"{task_id}.mp4"))  # 完整的视频文件路径
-        self.new_audio_name = os.path.abspath(os.path.join(task_dir, f"{task_id}.wav"))  # 完整的音频文件路径
+        self.new_video_name = os.path.abspath(os.path.join(task_dir, f"{task_id}.mp4"))
+        self.new_audio_name = os.path.abspath(os.path.join(task_dir, f"{task_id}.wav"))
         self.yaml_file = os.path.abspath(os.path.join(task_dir, f"{task_id}.yaml"))
         self.log_file = os.path.abspath(os.path.join(task_dir, f"{task_id}.log"))
+        # 添加 save_path
+        self.save_path = os.path.abspath(os.path.join(task_dir, f"new_{task_id}.mp4"))
         
         self.status = "等待中"
         self.create_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -78,8 +80,9 @@ class TrainTask:
             "create_time": self.create_time,
             "video_name": self.video_name,
             "audio_name": self.audio_name,
-            "new_video_name": self.new_video_name,  # 现在是完整的绝对路径
-            "new_audio_name": self.new_audio_name   # 现在是完整的绝对路径
+            "new_video_name": self.new_video_name,
+            "new_audio_name": self.new_audio_name,
+            "save_path": self.save_path  # 添加到配置中
         }
 
 def load_config():
@@ -149,7 +152,7 @@ def create_yaml_file(task_id, new_video_name, new_audio_name):
     with open(yaml_path, 'w', encoding='utf-8') as f:
         f.write(yaml_content)
 
-def get_command(yaml_path):
+def get_command(yaml_path, save_path):
     """根据操作系统生成对应的命令"""
     if not MUSETALK:
         raise ValueError("MUSETALK 路径未配置")
@@ -158,10 +161,10 @@ def get_command(yaml_path):
     
     if os_type == "Windows":
         # Windows 环境下，使用 cmd 激活 conda 环境并执行命令
-        return f'cmd /c "cd /d {MUSETALK} && conda activate musetalk && python -m tsxxdw.realtime_inference --inference_config {yaml_path}"'
+        return f'cmd /c "cd /d {MUSETALK} && conda activate musetalk && python -m tsxxdw.realtime_inference --inference_config {yaml_path} --save_path {save_path}"'
     else:
         # Linux/macOS 环境下，先进入目录，然后激活环境并执行命令
-        return f'cd {MUSETALK} && source /root/miniconda3/etc/profile.d/conda.sh && conda activate musetalk && python -m tsxxdw.realtime_inference --inference_config {yaml_path}'
+        return f'cd {MUSETALK} && source /root/miniconda3/etc/profile.d/conda.sh && conda activate musetalk && python -m tsxxdw.realtime_inference --inference_config {yaml_path} --save_path {save_path}'
 
 def process_task_queue():
     """处理任务队列"""
@@ -169,7 +172,7 @@ def process_task_queue():
     while True:
         with task_lock:
             if not task_queue or current_task:
-                time.sleep(10)  # 等待10秒后继续检查
+                time.sleep(10)
                 continue
             
             current_task = task_queue[0]
@@ -181,19 +184,16 @@ def process_task_queue():
             save_config(config)
             
             try:
-                # 准备命令
-                yaml_path = os.path.join(TRAIN_DIR, current_task, f"{current_task}.yaml")
-                cmd = get_command(yaml_path)
+                yaml_path = task_info['yaml_file']
+                save_path = task_info['save_path']
+                cmd = get_command(yaml_path, save_path)
                 
-                # 启动进程
-                log_path = os.path.join(TRAIN_DIR, current_task, f"{current_task}.log")
+                log_path = task_info['log_file']
                 with open(log_path, 'a', encoding='utf-8') as log_file:
-                    # 记录开始时间
                     start_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                     log_file.write(f"[{start_time}] 开始训练...\n")
                     log_file.flush()
                     
-                    # 执行命令
                     process = subprocess.Popen(
                         cmd,
                         shell=True,
@@ -202,31 +202,28 @@ def process_task_queue():
                         text=True
                     )
                     
-                    # 等待进程完成
                     return_code = process.wait()
                     
-                    # 记录结束时间和状态
                     end_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                    if return_code == 0:
+                    if return_code == 0 and os.path.exists(save_path):  # 检查输出文件是否存在
                         log_file.write(f"[{end_time}] 训练完成\n")
+                        task_info['status'] = "已完成"
                     else:
                         log_file.write(f"[{end_time}] 训练失败，返回码: {return_code}\n")
+                        task_info['status'] = "失败"
                     log_file.flush()
                 
                 # 更新任务状态
                 with task_lock:
                     config = load_config()
-                    task_info = config[current_task]
-                    task_info['status'] = "已完成" if return_code == 0 else "失败"
+                    config[current_task] = task_info
                     save_config(config)
                     
             except Exception as e:
-                # 记录错误信息
                 with open(log_path, 'a', encoding='utf-8') as log_file:
                     error_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                     log_file.write(f"[{error_time}] 执行出错: {str(e)}\n")
                 
-                # 更新任务状态为失败
                 with task_lock:
                     config = load_config()
                     task_info = config[current_task]
@@ -234,7 +231,6 @@ def process_task_queue():
                     save_config(config)
             
             finally:
-                # 清理当前任务
                 with task_lock:
                     task_queue.pop(0)
                     current_task = None
