@@ -28,9 +28,10 @@ os.makedirs('config', exist_ok=True)
 os.makedirs(TRAIN_DIR, exist_ok=True)
 
 # 任务队列和锁
-task_queue = []
-task_lock = threading.Lock()
 current_task = None
+task_queue = []  # 存储 TrainTask 对象，而不是仅存储 task_id
+task_lock = threading.Lock()
+task_thread = None
 
 def load_system_settings():
     """加载系统设置"""
@@ -166,29 +167,66 @@ def get_command(yaml_path, save_path):
         # Linux/macOS 环境下，先进入目录，然后激活环境并执行命令
         return f'cd {MUSETALK} && source /root/miniconda3/etc/profile.d/conda.sh && conda activate musetalk && python -m tsxxdw.realtime_inference --inference_config {yaml_path} --save_path {save_path}'
 
+def init_task_queue():
+    """初始化任务队列，加载未完成的任务"""
+    try:
+        config = load_config()
+        # 按创建时间排序
+        sorted_tasks = sorted(
+            [(task_id, task_info) for task_id, task_info in config.items()],
+            key=lambda x: x[1]['create_time']
+        )
+        
+        for task_id, task_info in sorted_tasks:
+            if task_info['status'] in ['等待中', '训练中']:
+                # 创建 TrainTask 对象
+                task = TrainTask(
+                    task_id=task_id,
+                    name=task_info['name'],
+                    video_name=task_info['video_name'],
+                    audio_name=task_info['audio_name']
+                )
+                task.status = '等待中'  # 重置状态
+                
+                # 更新配置
+                config[task_id] = task.to_dict()
+                
+                # 添加到队列
+                with task_lock:
+                    task_queue.append(task)
+        
+        # 保存更新后的配置
+        save_config(config)
+        print(f"已加载 {len(task_queue)} 个未完成的任务到队列")
+        
+    except Exception as e:
+        print(f"初始化任务队列时出错: {str(e)}")
+
 def process_task_queue():
     """处理任务队列"""
     global current_task
     while True:
-        with task_lock:
-            if not task_queue or current_task:
-                time.sleep(10)
-                continue
-            
-            current_task = task_queue[0]
-            config = load_config()
-            task_info = config[current_task]
-            
-            # 更新状态为训练中
-            task_info['status'] = "训练中"
-            save_config(config)
+        try:
+            with task_lock:
+                if not current_task and task_queue:
+                    current_task = task_queue[0]  # 现在是 TrainTask 对象
+                    config = load_config()
+                    task_info = config[current_task.task_id]
+                    
+                    # 更新状态为训练中
+                    task_info['status'] = "训练中"
+                    current_task.status = "训练中"
+                    save_config(config)
+                else:
+                    time.sleep(3)
+                    continue
             
             try:
-                yaml_path = task_info['yaml_file']
-                save_path = task_info['save_path']
+                yaml_path = current_task.yaml_file
+                save_path = current_task.save_path
                 cmd = get_command(yaml_path, save_path)
                 
-                log_path = task_info['log_file']
+                log_path = current_task.log_file
                 with open(log_path, 'a', encoding='utf-8') as log_file:
                     start_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                     log_file.write(f"[{start_time}] 开始训练...\n")
@@ -201,39 +239,46 @@ def process_task_queue():
                         stderr=subprocess.STDOUT,
                         text=True
                     )
+                    current_task.process = process  # 保存进程引用
                     
-                    # 循环检查输出文件是否存在
-                    while process.poll() is None:  # 当进程还在运行时
+                    while process.poll() is None:
                         if os.path.exists(save_path):
-                            # 文件存在，标记为完成
                             end_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                             log_file.write(f"[{end_time}] 训练完成，输出文件已生成\n")
-                            task_info['status'] = "已完成"
-                            save_config(config)
                             
-                            # 等待3秒
+                            # 更新状态
+                            with task_lock:
+                                config = load_config()
+                                task_info = config[current_task.task_id]
+                                task_info['status'] = "已完成"
+                                current_task.status = "已完成"
+                                save_config(config)
+                            
                             time.sleep(3)
                             
-                            # 终止进程
                             try:
-                                process.terminate()  # 尝试温和地终止
-                                time.sleep(1)  # 等待1秒
-                                if process.poll() is None:  # 如果进程还在运行
-                                    process.kill()  # 强制终止
+                                process.terminate()
+                                time.sleep(1)
+                                if process.poll() is None:
+                                    process.kill()
                                 log_file.write(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] 进程已终止\n")
                             except Exception as e:
                                 log_file.write(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] 终止进程时出错: {str(e)}\n")
                             
                             break
                         
-                        time.sleep(1)  # 每秒检查一次
+                        time.sleep(1)
                     
-                    # 如果循环结束但文件仍不存在，则标记为失败
                     if not os.path.exists(save_path):
                         end_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                         log_file.write(f"[{end_time}] 训练失败，未生成输出文件\n")
-                        task_info['status'] = "失败"
-                        save_config(config)
+                        
+                        with task_lock:
+                            config = load_config()
+                            task_info = config[current_task.task_id]
+                            task_info['status'] = "失败"
+                            current_task.status = "失败"
+                            save_config(config)
                     
                     log_file.flush()
                 
@@ -244,14 +289,21 @@ def process_task_queue():
                 
                 with task_lock:
                     config = load_config()
-                    task_info = config[current_task]
+                    task_info = config[current_task.task_id]
                     task_info['status'] = "失败"
+                    current_task.status = "失败"
                     save_config(config)
             
             finally:
+                # 任务处理完成后，从队列中移除并重置当前任务
                 with task_lock:
-                    task_queue.pop(0)
+                    if task_queue and task_queue[0] == current_task:
+                        task_queue.pop(0)
                     current_task = None
+                    
+        except Exception as e:
+            print(f"任务处理循环出错: {str(e)}")
+            time.sleep(5)
 
 # 启动任务处理线程
 threading.Thread(target=process_task_queue, daemon=True).start()
@@ -267,23 +319,19 @@ def upload():
         audio = request.files['audio']
         name = request.form['name']
         
-        # 验证文件和名称
         if not video or not audio or not name:
             return jsonify({'error': '请提供所有必需的文件和信息'})
         
         if not name.replace(' ', '').isalnum():
             return jsonify({'error': '训练对象名称只能包含字母、数字、汉字'})
         
-        # 生成任务ID和目录
         task_id = generate_task_id()
         task_dir = os.path.join(TRAIN_DIR, task_id)
         os.makedirs(task_dir, exist_ok=True)
         
-        # 保存并转换文件
-        video_path = os.path.join(task_dir, f"{task_id}.mp4")
-        audio_path = os.path.join(task_dir, f"{task_id}.wav")
-        
         try:
+            video_path = os.path.join(task_dir, f"{task_id}.mp4")
+            audio_path = os.path.join(task_dir, f"{task_id}.wav")
             convert_video(video, video_path)
             convert_audio(audio, audio_path)
         except Exception as e:
@@ -303,7 +351,7 @@ def upload():
         
         # 添加到任务队列
         with task_lock:
-            task_queue.append(task_id)
+            task_queue.append(task)  # 添加 TrainTask 对象而不是 task_id
         
         return jsonify({'success': True})
         

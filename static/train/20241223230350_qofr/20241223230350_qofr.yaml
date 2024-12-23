@@ -1,6 +1,0 @@
-20241223230350_qofr:
-  preparation: True
-  bbox_shift: 5
-  video_path: C:\computer\3\itproject\digitaltool\static\train\20241223230350_qofr\20241223230350_qofr.mp4
-  audio_clips:
-    audio_0: C:\computer\3\itproject\digitaltool\static\train\20241223230350_qofr\20241223230350_qofr.wav

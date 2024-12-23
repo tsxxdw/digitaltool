@@ -1,0 +1,6 @@
+20241223231359_sojg:
+  preparation: True
+  bbox_shift: 5
+  video_path: C:\computer\3\itproject\digitaltool\static\train\20241223231359_sojg\20241223231359_sojg.mp4
+  audio_clips:
+    audio_0: C:\computer\3\itproject\digitaltool\static\train\20241223231359_sojg\20241223231359_sojg.wav

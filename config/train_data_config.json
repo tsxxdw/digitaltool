@@ -1,50 +1,14 @@
 {
-    "20241223230350_qofr": {
-        "name": "2132",
-        "yaml_file": "C:\\computer\\3\\itproject\\digitaltool\\static\\train\\20241223230350_qofr\\20241223230350_qofr.yaml",
-        "status": "已完成",
-        "log_file": "C:\\computer\\3\\itproject\\digitaltool\\static\\train\\20241223230350_qofr\\20241223230350_qofr.log",
-        "create_time": "2024-12-23 23:03:50",
-        "video_name": "1 - 副本 (4).mp4",
-        "audio_name": "1 - 副本.WAV",
-        "new_video_name": "C:\\computer\\3\\itproject\\digitaltool\\static\\train\\20241223230350_qofr\\20241223230350_qofr.mp4",
-        "new_audio_name": "C:\\computer\\3\\itproject\\digitaltool\\static\\train\\20241223230350_qofr\\20241223230350_qofr.wav",
-        "save_path": "C:\\computer\\3\\itproject\\digitaltool\\static\\train\\20241223230350_qofr\\save_path_20241223230350_qofr.mp4"
-    },
-    "20241223230637_vhfy": {
-        "name": "436",
-        "yaml_file": "C:\\computer\\3\\itproject\\digitaltool\\static\\train\\20241223230637_vhfy\\20241223230637_vhfy.yaml",
-        "status": "等待中",
-        "log_file": "C:\\computer\\3\\itproject\\digitaltool\\static\\train\\20241223230637_vhfy\\20241223230637_vhfy.log",
-        "create_time": "2024-12-23 23:06:37",
-        "video_name": "1 - 副本 (4).mp4",
-        "audio_name": "1-副本 (6).WAV",
-        "new_video_name": "C:\\computer\\3\\itproject\\digitaltool\\static\\train\\20241223230637_vhfy\\20241223230637_vhfy.mp4",
-        "new_audio_name": "C:\\computer\\3\\itproject\\digitaltool\\static\\train\\20241223230637_vhfy\\20241223230637_vhfy.wav",
-        "save_path": "C:\\computer\\3\\itproject\\digitaltool\\static\\train\\20241223230637_vhfy\\save_path_20241223230637_vhfy.mp4"
-    },
-    "20241223230651_nuoo": {
-        "name": "6h",
-        "yaml_file": "C:\\computer\\3\\itproject\\digitaltool\\static\\train\\20241223230651_nuoo\\20241223230651_nuoo.yaml",
-        "status": "等待中",
-        "log_file": "C:\\computer\\3\\itproject\\digitaltool\\static\\train\\20241223230651_nuoo\\20241223230651_nuoo.log",
-        "create_time": "2024-12-23 23:06:51",
-        "video_name": "1 - 副本.mp4",
-        "audio_name": "1 - 副本.WAV",
-        "new_video_name": "C:\\computer\\3\\itproject\\digitaltool\\static\\train\\20241223230651_nuoo\\20241223230651_nuoo.mp4",
-        "new_audio_name": "C:\\computer\\3\\itproject\\digitaltool\\static\\train\\20241223230651_nuoo\\20241223230651_nuoo.wav",
-        "save_path": "C:\\computer\\3\\itproject\\digitaltool\\static\\train\\20241223230651_nuoo\\save_path_20241223230651_nuoo.mp4"
-    },
-    "20241223230701_fxym": {
-        "name": "yh",
-        "yaml_file": "C:\\computer\\3\\itproject\\digitaltool\\static\\train\\20241223230701_fxym\\20241223230701_fxym.yaml",
-        "status": "等待中",
-        "log_file": "C:\\computer\\3\\itproject\\digitaltool\\static\\train\\20241223230701_fxym\\20241223230701_fxym.log",
-        "create_time": "2024-12-23 23:07:01",
-        "video_name": "1.mp4",
-        "audio_name": "1 - 副本 (4).WAV",
-        "new_video_name": "C:\\computer\\3\\itproject\\digitaltool\\static\\train\\20241223230701_fxym\\20241223230701_fxym.mp4",
-        "new_audio_name": "C:\\computer\\3\\itproject\\digitaltool\\static\\train\\20241223230701_fxym\\20241223230701_fxym.wav",
-        "save_path": "C:\\computer\\3\\itproject\\digitaltool\\static\\train\\20241223230701_fxym\\save_path_20241223230701_fxym.mp4"
+    "20241223231448_oppg": {
+        "name": "657",
+        "yaml_file": "C:\\computer\\3\\itproject\\digitaltool\\static\\train\\20241223231448_oppg\\20241223231448_oppg.yaml",
+        "status": "训练中",
+        "log_file": "C:\\computer\\3\\itproject\\digitaltool\\static\\train\\20241223231448_oppg\\20241223231448_oppg.log",
+        "create_time": "2024-12-23 23:14:48",
+        "video_name": "1 - 副本 (3).mp4",
+        "audio_name": "1 - 副本 (5).WAV",
+        "new_video_name": "C:\\computer\\3\\itproject\\digitaltool\\static\\train\\20241223231448_oppg\\20241223231448_oppg.mp4",
+        "new_audio_name": "C:\\computer\\3\\itproject\\digitaltool\\static\\train\\20241223231448_oppg\\20241223231448_oppg.wav",
+        "save_path": "C:\\computer\\3\\itproject\\digitaltool\\static\\train\\20241223231448_oppg\\save_path_20241223231448_oppg.mp4"
     }
 }
