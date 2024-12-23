@@ -1,56 +1,70 @@
-// 全局变量来存储轮询间隔
-const POLLING_INTERVAL = 10000;      // 10秒
-const COMPLETED_POLLING_INTERVAL = null;  // 已完成的任务不再轮询
+// 全局变量
+const POLLING_INTERVAL = 5000;      // 5秒
+let globalTasks = [];              // 存储所有任务
+let pollingTimer = null;           // 轮询定时器
 
-// 更新任务列表
+// 更新任务列表（只在页面加载和新任务上传时调用）
 function updateTasks() {
     $.get('/action/tasks', function(tasks) {
-        $('#taskContainer').empty();
-        tasks.forEach(function(task) {
-            let queueInfo = task.queue_position ? 
-                `<div class="queue-info">队列位置: ${task.queue_position}</div>` : '';
-                
-            let taskHtml = `
-                <div class="task-item">
-                    <div class="task-header">
-                        <div class="task-info">
-                            <div><strong>任务ID:</strong> ${task.task_id}</div>
-                            <div><strong>状态:</strong> <span class="status-badge ${getStatusClass(task.status)}">${task.status}</span></div>
-                            <div><strong>创建时间:</strong> ${task.create_time}</div>
-                            ${queueInfo}
-                        </div>
-                    </div>
-                    <div class="file-info">
-                        <div class="file-item">
-                            ${task.video_name}
-                        </div>
-                        <div class="file-item">
-                            ${task.audio_name}
-                        </div>
-                    </div>
-                    <div class="log-container" id="log-${task.task_id}"></div>
-                    ${task.output_file ? `
-                        <div class="download-actions">
-                            <a href="${task.output_file}" class="download-btn" download>下载视频</a>
-                            <span class="copy-link-btn" onclick="showDownloadLink('${task.output_file}')">复制下载链接</span>
-                        </div>
-                    ` : ''}
-                </div>
-            `;
-            $('#taskContainer').append(taskHtml);
-            
-            // 获取任务状态和日志（页面刷新模式）
-            pollTaskStatus(task.task_id, true);
-        });
-        
-        // 只有存在进行中的任务时才继续轮询
-        const hasActiveTasks = tasks.some(task => 
-            task.status !== "完成" && task.status !== "失败"
-        );
-        if (hasActiveTasks) {
-            setTimeout(updateTasks, POLLING_INTERVAL);
-        }
+        globalTasks = tasks;  // 更新全局任务列表
+        renderTasks();        // 渲染任务列表
+        startPolling();       // 启动轮询
     });
+}
+
+// 渲染任务列表
+function renderTasks() {
+    $('#taskContainer').empty();
+    globalTasks.forEach(function(task) {
+        let queueInfo = task.queue_position ? 
+            `<div class="queue-info">队列位置: ${task.queue_position}</div>` : '';
+            
+        let taskHtml = `
+            <div class="task-item">
+                <div class="task-header">
+                    <div class="task-info">
+                        <div><strong>任务ID:</strong> ${task.task_id}</div>
+                        <div><strong>状态:</strong> <span class="status-badge ${getStatusClass(task.status)}">${task.status}</span></div>
+                        <div><strong>创建时间:</strong> ${task.create_time}</div>
+                        ${queueInfo}
+                    </div>
+                </div>
+                <div class="file-info">
+                    <div class="file-item">${task.video_name}</div>
+                    <div class="file-item">${task.audio_name}</div>
+                </div>
+                <div class="log-container" id="log-${task.task_id}"></div>
+                ${task.output_file ? `
+                    <div class="download-actions">
+                        <a href="${task.output_file}" class="download-btn" download>下载视频</a>
+                        <span class="copy-link-btn" onclick="showDownloadLink('${task.output_file}')">复制下载链接</span>
+                    </div>
+                ` : ''}
+            </div>
+        `;
+        $('#taskContainer').append(taskHtml);
+        
+        // 初始加载任务日志
+        pollTaskStatus(task.task_id, true);
+    });
+}
+
+// 启动轮询
+function startPolling() {
+    // 清除现有的轮询定时器
+    if (pollingTimer) {
+        clearInterval(pollingTimer);
+    }
+    
+    // 设置新的轮询定时器
+    pollingTimer = setInterval(() => {
+        // 只为进行中的任务更新状态
+        globalTasks.forEach(task => {
+            if (task.status !== "完成" && task.status !== "失败") {
+                pollTaskStatus(task.task_id, false);
+            }
+        });
+    }, POLLING_INTERVAL);
 }
 
 // 轮询任务状态
@@ -92,13 +106,13 @@ function pollTaskStatus(taskId, isRefresh = false) {
 
 // 页面加载完成后执行
 $(document).ready(function() {
+    // 初始加载任务列表
     updateTasks();
 
     // 监听表单提交
     $('#uploadForm').on('submit', function(e) {
-        e.preventDefault(); // 阻止表单默认提交行为
+        e.preventDefault();
         
-        // 检查是否选择了文件
         const videoFile = $('#video')[0].files[0];
         const audioFile = $('#audio')[0].files[0];
         
@@ -107,15 +121,12 @@ $(document).ready(function() {
             return false;
         }
 
-        // 创建 FormData 对象
         const formData = new FormData();
         formData.append('video', videoFile);
         formData.append('audio', audioFile);
 
-        // 禁用提交按钮
         $('#submitBtn').prop('disabled', true);
 
-        // 发送 AJAX 请求
         $.ajax({
             url: '/action/upload',
             type: 'POST',
@@ -124,10 +135,8 @@ $(document).ready(function() {
             contentType: false,
             success: function(response) {
                 if (response.task_id) {
-                    // 清空表单
                     $('#uploadForm')[0].reset();
-                    // 更新任务列表
-                    updateTasks();
+                    updateTasks();  // 更新任务列表
                 } else {
                     alert('上传失败：' + (response.error || '未知错误'));
                 }
@@ -136,7 +145,6 @@ $(document).ready(function() {
                 alert('上传失败：' + (xhr.responseJSON?.error || '服务器错误'));
             },
             complete: function() {
-                // 重新启用提交按钮
                 $('#submitBtn').prop('disabled', false);
             }
         });
@@ -173,7 +181,14 @@ $(document).ready(function() {
             $('#linkModal').hide();
         }
     });
-}); 
+});
+
+// 在页面卸载时清除定时器
+$(window).on('unload', function() {
+    if (pollingTimer) {
+        clearInterval(pollingTimer);
+    }
+});
 
 function getStatusClass(status) {
     switch(status) {
