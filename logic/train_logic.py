@@ -9,11 +9,13 @@ import threading
 import time
 import queue
 from pathlib import Path
+import platform
 
 bp = Blueprint('train', __name__)
 
 # 配置文件路径
 CONFIG_FILE = 'config/train_data_config.json'
+SYSTEM_SETTINGS_FILE = 'config/system_setting.json'
 TRAIN_DIR = 'static/train'
 
 # 确保目录存在
@@ -24,6 +26,25 @@ os.makedirs(TRAIN_DIR, exist_ok=True)
 task_queue = []
 task_lock = threading.Lock()
 current_task = None
+
+def load_system_settings():
+    """加载系统设置"""
+    try:
+        with open(SYSTEM_SETTINGS_FILE, 'r', encoding='utf-8') as f:
+            settings = json.load(f)
+            os_type = platform.system()
+            if os_type == "Windows":
+                return settings.get('windows_musetalk_path', '')
+            else:
+                return settings.get('linux_musetalk_path', '')
+    except Exception as e:
+        print(f"加载系统设置失败: {str(e)}")
+        return ''
+
+# 获取对应操作系统的 MUSETALK 路径
+MUSETALK = load_system_settings()
+if not MUSETALK:
+    print("警告: 未在 system_setting.json 中找到对应操作系统的 MUSETALK 路径配置")
 
 class TrainTask:
     def __init__(self, task_id, name, video_name, audio_name):
@@ -117,12 +138,27 @@ def create_yaml_file(task_id, new_video_name, new_audio_name):
     with open(yaml_path, 'w', encoding='utf-8') as f:
         f.write(yaml_content)
 
+def get_command(yaml_path):
+    """根据操作系统生成对应的命令"""
+    if not MUSETALK:
+        raise ValueError("MUSETALK 路径未配置")
+        
+    os_type = platform.system()
+    
+    if os_type == "Windows":
+        # Windows 环境下，使用 cmd 激活 conda 环境并执行命令
+        return f'cmd /c "cd /d {MUSETALK} && conda activate musetalk && python -m scripts.realtime_inference --inference_config {yaml_path}"'
+    else:
+        # Linux/macOS 环境下，先进入目录，然后激活环境并执行命令
+        return f'cd {MUSETALK} && source /root/miniconda3/etc/profile.d/conda.sh && conda activate musetalk && python -m scripts.realtime_inference --inference_config {yaml_path}'
+
 def process_task_queue():
     """处理任务队列"""
     global current_task
     while True:
         with task_lock:
             if not task_queue or current_task:
+                time.sleep(10)  # 等待10秒后继续检查
                 continue
             
             current_task = task_queue[0]
@@ -133,34 +169,64 @@ def process_task_queue():
             task_info['status'] = "训练中"
             save_config(config)
             
-            # 准备命令
-            yaml_path = os.path.join(TRAIN_DIR, current_task, f"{current_task}.yaml")
-            cmd = f'python -m scripts.realtime_inference --inference_config "{yaml_path}"'
+            try:
+                # 准备命令
+                yaml_path = os.path.join(TRAIN_DIR, current_task, f"{current_task}.yaml")
+                cmd = get_command(yaml_path)
+                
+                # 启动进程
+                log_path = os.path.join(TRAIN_DIR, current_task, f"{current_task}.log")
+                with open(log_path, 'a', encoding='utf-8') as log_file:
+                    # 记录开始时间
+                    start_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                    log_file.write(f"[{start_time}] 开始训练...\n")
+                    log_file.flush()
+                    
+                    # 执行命令
+                    process = subprocess.Popen(
+                        cmd,
+                        shell=True,
+                        stdout=log_file,
+                        stderr=subprocess.STDOUT,
+                        text=True
+                    )
+                    
+                    # 等待进程完成
+                    return_code = process.wait()
+                    
+                    # 记录结束时间和状态
+                    end_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                    if return_code == 0:
+                        log_file.write(f"[{end_time}] 训练完成\n")
+                    else:
+                        log_file.write(f"[{end_time}] 训练失败，返回码: {return_code}\n")
+                    log_file.flush()
+                
+                # 更新任务状态
+                with task_lock:
+                    config = load_config()
+                    task_info = config[current_task]
+                    task_info['status'] = "已完成" if return_code == 0 else "失败"
+                    save_config(config)
+                    
+            except Exception as e:
+                # 记录错误信息
+                with open(log_path, 'a', encoding='utf-8') as log_file:
+                    error_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                    log_file.write(f"[{error_time}] 执行出错: {str(e)}\n")
+                
+                # 更新任务状态为失败
+                with task_lock:
+                    config = load_config()
+                    task_info = config[current_task]
+                    task_info['status'] = "失败"
+                    save_config(config)
             
-            # 启动进程
-            log_path = os.path.join(TRAIN_DIR, current_task, f"{current_task}.log")
-            with open(log_path, 'a', encoding='utf-8') as log_file:
-                process = subprocess.Popen(
-                    cmd,
-                    shell=True,
-                    stdout=log_file,
-                    stderr=subprocess.STDOUT,
-                    text=True
-                )
-            
-            # 等待进程完成
-            process.wait()
-            
-            # 更新状态为已完成
-            with task_lock:
-                config = load_config()
-                task_info = config[current_task]
-                task_info['status'] = "已完成"
-                save_config(config)
-                task_queue.pop(0)
-                current_task = None
-        
-        time.sleep(10)  # 每10秒检查一次
+            finally:
+                # 清理当前任务
+                with task_lock:
+                    task_queue.pop(0)
+                    current_task = None
 
 # 启动任务处理线程
 threading.Thread(target=process_task_queue, daemon=True).start()
