@@ -236,43 +236,41 @@ def process_task_queue():
                 is_processing = False
                 break
             
-            # 检查队首任务的状态
             current_task = task_queue[0]
             if current_task.status != "等待中":
-                # 如果不是等待中的任务，说明已经在处理或完成了
                 if current_task.status == "完成" or current_task.status == "失败":
-                    # 如果完成了，移除任务
                     task_queue.popleft()
                     continue
-                # 如果是处理中，等待处理完成
                 break
             
-            # 开始处理新任务
             current_task.status = "处理中"
             current_task.add_log("开始处理任务...")
-            # 启动进程
             current_task.start_process()
 
         try:
-            # 等待任务完成
             process = current_task.process
             if process:
-                process.wait()  # 等待当前任务完成
+                process.wait()
                 
-                # 检查进程返回码
-                if process.returncode == 0:
+                # 检查进程返回码和输出文件是否存在
+                if process.returncode == 0 and os.path.exists(current_task.output_file):
                     current_task.status = "完成"
+                    # 将输出文件路径转换为相对于静态目录的URL路径
+                    relative_path = os.path.relpath(current_task.output_file, 'static')
+                    current_task.output_file = relative_path
                     current_task.add_log("任务处理完成")
                 else:
                     current_task.status = "失败"
+                    current_task.output_file = None
                     current_task.add_log(f"任务执行失败，返回码: {process.returncode}")
         except Exception as e:
             current_task.status = "失败"
+            current_task.output_file = None
             current_task.add_log(f"任务执行异常: {str(e)}")
         finally:
             with task_lock:
                 if current_task.status in ["完成", "失败"]:
-                    task_queue.popleft()  # 移除已完成或失败的任务
+                    task_queue.popleft()
 
 def start_task_processing():
     """启动任务处理"""

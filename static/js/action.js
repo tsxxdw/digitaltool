@@ -19,6 +19,16 @@ function renderTasks() {
         let queueInfo = task.queue_position ? 
             `<div class="queue-info">队列位置: ${task.queue_position}</div>` : '';
             
+        let downloadHtml = '';
+        if (task.status === "完成" && task.output_file) {
+            downloadHtml = `
+                <div class="download-actions">
+                    <a href="/static/${task.output_file}" class="download-btn" download>下载视频</a>
+                    <span class="copy-link-btn" onclick="copyDownloadLink('${task.output_file}')">复制下载链接</span>
+                </div>
+            `;
+        }
+        
         let taskHtml = `
             <div class="task-item">
                 <div class="task-header">
@@ -34,12 +44,7 @@ function renderTasks() {
                     <div class="file-item">${task.audio_name}</div>
                 </div>
                 <div class="log-container" id="log-${task.task_id}"></div>
-                ${task.output_file ? `
-                    <div class="download-actions">
-                        <a href="${task.output_file}" class="download-btn" download>下载视频</a>
-                        <span class="copy-link-btn" onclick="showDownloadLink('${task.output_file}')">复制下载链接</span>
-                    </div>
-                ` : ''}
+                ${downloadHtml}
             </div>
         `;
         $('#taskContainer').append(taskHtml);
@@ -151,36 +156,6 @@ $(document).ready(function() {
 
         return false;
     });
-
-    // 显示下载链接
-    window.showDownloadLink = function(url) {
-        const modal = $('#linkModal');
-        $('#downloadLink').text(window.location.origin + '/' + url);
-        modal.show();
-    }
-
-    // 复制下载链接
-    window.copyDownloadLink = function() {
-        const linkText = $('#downloadLink').text();
-        navigator.clipboard.writeText(linkText).then(function() {
-            alert('链接已复制到剪贴板');
-        }).catch(function(err) {
-            console.error('复制失败:', err);
-            alert('复制失败，请手动复制');
-        });
-    }
-
-    // 关闭模态框
-    $('.close').click(function() {
-        $('#linkModal').hide();
-    });
-    
-    // 点击模态框外部关闭
-    $(window).click(function(e) {
-        if (e.target == document.getElementById('linkModal')) {
-            $('#linkModal').hide();
-        }
-    });
 });
 
 // 在页面卸载时清除定时器
@@ -203,4 +178,22 @@ function getStatusClass(status) {
         default:
             return '';
     }
+}
+
+// 添加复制链接功能
+function copyDownloadLink(filePath) {
+    const fullUrl = `${window.location.origin}/static/${filePath}`;
+    navigator.clipboard.writeText(fullUrl).then(function() {
+        alert('下载链接已复制到剪贴板');
+    }).catch(function(err) {
+        console.error('复制失败:', err);
+        // 降级处理：创建临时输入框
+        const tempInput = document.createElement('input');
+        tempInput.value = fullUrl;
+        document.body.appendChild(tempInput);
+        tempInput.select();
+        document.execCommand('copy');
+        document.body.removeChild(tempInput);
+        alert('下载链接已复制到剪贴板');
+    });
 } 
