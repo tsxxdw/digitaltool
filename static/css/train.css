@@ -40,40 +40,66 @@
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 15px;
+    gap: 15px;
 }
 
 .task-info {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    display: flex;
+    flex-direction: column;
     gap: 10px;
+    width: 100%;
+}
+
+.info-row {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.info-cell {
+    min-width: 200px;
+    padding: 5px;
+}
+
+.name-cell {
     flex-grow: 1;
 }
 
-.task-name {
-    display: flex;
-    align-items: center;
+.file-path {
+    width: 100%;
 }
 
-.task-name input {
-    margin-right: 10px;
-    padding: 5px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
+.path-text {
+    font-family: monospace;
+    word-break: break-all;
+    color: #666;
+    font-size: 0.9em;
+}
+
+.file-name {
+    color: #2196F3;
+    font-weight: 500;
 }
 
 .delete-btn {
-    background-color: #dc3545;
+    background: #ff4444;
     color: white;
     border: none;
-    border-radius: 4px;
-    padding: 5px 10px;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    font-size: 20px;
     cursor: pointer;
-    margin-left: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background-color 0.3s;
 }
 
 .delete-btn:hover {
-    background-color: #c82333;
+    background: #cc0000;
 }
 
 .log-container {
@@ -94,11 +120,11 @@
 }
 
 .status-badge {
-    display: inline-block;
     padding: 4px 12px;
     border-radius: 20px;
     font-size: 0.9rem;
     font-weight: 500;
+    display: inline-block;
 }
 
 .status-waiting {

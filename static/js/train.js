@@ -16,7 +16,6 @@ function updateTasks() {
 function renderTasks() {
     $('#taskContainer').empty();
     
-    // 将任务对象转换为数组并按创建时间排序
     const taskArray = Object.entries(globalTasks).map(([id, task]) => ({
         id,
         ...task
@@ -31,28 +30,37 @@ function renderTasks() {
             <div class="task-item" data-task-id="${task.id}">
                 <div class="task-header">
                     <div class="task-info">
-                        <div><strong>序号:</strong> ${taskNumber}</div>
-                        <div class="task-name">
-                            <strong>训练对象:</strong>
-                            <input type="text" value="${task.name}" 
-                                   ${task.status !== "已完成" ? 'disabled' : ''}
-                                   onchange="updateTaskName('${task.id}', this.value)">
+                        <div class="info-row">
+                            <div class="info-cell"><strong>序号:</strong> ${taskNumber}</div>
+                            <div class="info-cell"><strong>状态:</strong> <span class="status-badge ${getStatusClass(task.status)}">${task.status}</span></div>
+                            <div class="info-cell"><strong>创建时间:</strong> ${task.create_time}</div>
                         </div>
-                        <div><strong>状态:</strong> <span class="status-badge ${getStatusClass(task.status)}">${task.status}</span></div>
-                        <div><strong>创建时间:</strong> ${task.create_time}</div>
-                        <div><strong>原始视频:</strong> ${task.video_name}</div>
-                        <div><strong>原始音频:</strong> ${task.audio_name}</div>
+                        <div class="info-row">
+                            <div class="info-cell name-cell">
+                                <strong>训练对象:</strong>
+                                <input type="text" value="${task.name}" 
+                                       ${task.status === "训练中" ? 'disabled' : ''}
+                                       onchange="updateTaskName('${task.id}', this.value)">
+                            </div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-cell"><strong>原始视频:</strong> <span class="file-name">${task.video_name}</span></div>
+                            <div class="info-cell"><strong>原始音频:</strong> <span class="file-name">${task.audio_name}</span></div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-cell file-path"><strong>转换后视频:</strong> <span class="path-text">${task.new_video_name}</span></div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-cell file-path"><strong>转换后音频:</strong> <span class="path-text">${task.new_audio_name}</span></div>
+                        </div>
                     </div>
-                    ${task.status === "已完成" ? 
-                        `<button class="delete-btn" onclick="deleteTask('${task.id}')">×</button>` : 
-                        ''}
+                    <button class="delete-btn" onclick="deleteTask('${task.id}')">×</button>
                 </div>
                 <div class="log-container" id="log-${task.id}"></div>
             </div>
         `;
         $('#taskContainer').append(taskHtml);
         
-        // 初始加载任务日志
         pollTaskStatus(task.id, true);
     });
 }

@@ -10,6 +10,8 @@ import time
 import queue
 from pathlib import Path
 import platform
+import random
+import string
 
 bp = Blueprint('train', __name__)
 
@@ -93,10 +95,12 @@ def save_config(config):
         json.dump(config, f, ensure_ascii=False, indent=4)
 
 def generate_task_id():
-    """生成任务ID"""
+    """生成任务ID - 年月日时分秒 + 4位随机字母"""
     now = datetime.now()
-    random_str = str(uuid.uuid4())[:4]
-    return f"{now.strftime('%Y%m%d%H%M%S')}_{random_str}"
+    # 生成4位随机字母
+    letters = ''.join(random.choices(string.ascii_lowercase, k=4))
+    # 格式化日期时间 + 4位字母
+    return f"{now.strftime('%Y%m%d%H%M%S')}_{letters}"
 
 def convert_video(input_file, output_path):
     """转换视频为MP4格式"""
@@ -154,10 +158,10 @@ def get_command(yaml_path):
     
     if os_type == "Windows":
         # Windows 环境下，使用 cmd 激活 conda 环境并执行命令
-        return f'cmd /c "cd /d {MUSETALK} && conda activate musetalk && python -m scripts.realtime_inference --inference_config {yaml_path}"'
+        return f'cmd /c "cd /d {MUSETALK} && conda activate musetalk && python -m tsxxdw.realtime_inference --inference_config {yaml_path}"'
     else:
         # Linux/macOS 环境下，先进入目录，然后激活环境并执行命令
-        return f'cd {MUSETALK} && source /root/miniconda3/etc/profile.d/conda.sh && conda activate musetalk && python -m scripts.realtime_inference --inference_config {yaml_path}'
+        return f'cd {MUSETALK} && source /root/miniconda3/etc/profile.d/conda.sh && conda activate musetalk && python -m tsxxdw.realtime_inference --inference_config {yaml_path}'
 
 def process_task_queue():
     """处理任务队列"""
@@ -346,23 +350,40 @@ def update_name():
 
 @bp.route('/train/delete_task', methods=['POST'])
 def delete_task():
+    global current_task
     task_id = request.form['task_id']
     
     config = load_config()
     if task_id not in config:
         return jsonify({'error': '任务不存在'})
     
-    task_info = config[task_id]
-    if task_info['status'] != "已完成":
-        return jsonify({'error': '只能删除已完成的任务'})
-    
-    # 删除任务目录
-    task_dir = os.path.join(TRAIN_DIR, task_id)
-    if os.path.exists(task_dir):
-        shutil.rmtree(task_dir)
-    
-    # 从配置文件中删除
-    del config[task_id]
-    save_config(config)
-    
-    return jsonify({'success': True}) 
+    try:
+        # 如果任务正在训练中，需要先终止进程
+        with task_lock:
+            if current_task == task_id:
+                # 获取当前任务的进程
+                for task in task_queue:
+                    if task.task_id == task_id and task.process:
+                        try:
+                            task.process.terminate()  # 终止进程
+                            task.process.wait()       # 等待进程结束
+                        except:
+                            pass  # 忽略终止进程时的错误
+                current_task = None
+            
+            # 从任务队列中移除
+            task_queue[:] = [t for t in task_queue if t != task_id]
+        
+        # 删除任务目录
+        task_dir = os.path.join(TRAIN_DIR, task_id)
+        if os.path.exists(task_dir):
+            shutil.rmtree(task_dir)
+        
+        # 从配置文件中删除
+        del config[task_id]
+        save_config(config)
+        
+        return jsonify({'success': True})
+        
+    except Exception as e:
+        return jsonify({'error': f'删除任务失败: {str(e)}'}) 
