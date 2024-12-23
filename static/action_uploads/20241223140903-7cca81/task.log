@@ -482,3 +482,42 @@
 [2024-12-23 14:10:37] Generating in-between frames:  67%|██████▋   | 2/3 [00:03<00:02,  2.06s/it]
 [2024-12-23 14:10:37] Generating in-between frames: 100%|██████████| 3/3 [00:04<00:00,  1.42s/it]
 [2024-12-23 14:10:37] Generating in-between frames: 100%|██████████| 3/3 [00:04<00:00,  1.49s/it]
+[2024-12-23 14:10:37] [0mGenerated transition video saved at C:\Users\ADMINI~1\AppData\Local\Temp\blending_frames_v5w_8mvb\generated_10_14.mp4
+[2024-12-23 14:10:39] 25%|██▌       | 1/4 [00:06<00:20,  6.95s/it]
+[2024-12-23 14:10:40] Generating in-between frames:   0%|          | 0/3 [00:00<?, ?it/s]
+[2024-12-23 14:10:43] Generating in-between frames:  33%|███▎      | 1/3 [00:01<00:02,  1.11s/it]
+[2024-12-23 14:10:44] Generating in-between frames:  67%|██████▋   | 2/3 [00:03<00:02,  2.12s/it]
+[2024-12-23 14:10:44] Generating in-between frames: 100%|██████████| 3/3 [00:04<00:00,  1.46s/it]
+[2024-12-23 14:10:44] Generating in-between frames: 100%|██████████| 3/3 [00:04<00:00,  1.54s/it]
+[2024-12-23 14:10:44] [0mGenerated transition video saved at C:\Users\ADMINI~1\AppData\Local\Temp\blending_frames_v5w_8mvb\generated_55_59.mp4
+[2024-12-23 14:10:46] 50%|█████     | 2/4 [00:14<00:14,  7.02s/it]
+[2024-12-23 14:10:47] Generating in-between frames:   0%|          | 0/3 [00:00<?, ?it/s]
+[2024-12-23 14:10:50] Generating in-between frames:  33%|███▎      | 1/3 [00:01<00:02,  1.05s/it]
+[2024-12-23 14:10:51] Generating in-between frames:  67%|██████▋   | 2/3 [00:03<00:01,  1.96s/it]
+[2024-12-23 14:10:51] Generating in-between frames: 100%|██████████| 3/3 [00:04<00:00,  1.37s/it]
+[2024-12-23 14:10:51] Generating in-between frames: 100%|██████████| 3/3 [00:04<00:00,  1.44s/it]
+[2024-12-23 14:10:51] [0mGenerated transition video saved at C:\Users\ADMINI~1\AppData\Local\Temp\blending_frames_v5w_8mvb\generated_118_122.mp4
+[2024-12-23 14:10:53] 75%|███████▌  | 3/4 [00:20<00:06,  6.91s/it]
+[2024-12-23 14:10:54] Generating in-between frames:   0%|          | 0/3 [00:00<?, ?it/s]
+[2024-12-23 14:10:57] Generating in-between frames:  33%|███▎      | 1/3 [00:01<00:02,  1.06s/it]
+[2024-12-23 14:10:58] Generating in-between frames:  67%|██████▋   | 2/3 [00:03<00:02,  2.02s/it]
+[2024-12-23 14:10:58] Generating in-between frames: 100%|██████████| 3/3 [00:04<00:00,  1.40s/it]
+[2024-12-23 14:10:58] Generating in-between frames: 100%|██████████| 3/3 [00:04<00:00,  1.47s/it]
+[2024-12-23 14:10:58] [0mGenerated transition video saved at C:\Users\ADMINI~1\AppData\Local\Temp\blending_frames_v5w_8mvb\generated_124_128.mp4
+[2024-12-23 14:10:58] 100%|██████████| 4/4 [00:27<00:00,  6.89s/it]
+[2024-12-23 14:10:58] Moviepy - Building video C:\computer\3\itproject\manyaitools_modules\TANGO\outputs/gradio\test_0\retrieved_motions_0\audio_0_retri_0.mp4.
+[2024-12-23 14:10:58] 100%|██████████| 4/4 [00:27<00:00,  6.91s/it]
+[2024-12-23 14:10:58] Moviepy - Writing video C:\computer\3\itproject\manyaitools_modules\TANGO\outputs/gradio\test_0\retrieved_motions_0\audio_0_retri_0.mp4
+[2024-12-23 14:10:58] t:   0%|          | 0/150 [00:00<?, ?it/s, now=None]
+[2024-12-23 14:10:58] t:  13%|█▎        | 19/150 [00:00<00:00, 186.28it/s, now=None]
+[2024-12-23 14:10:58] t:  32%|███▏      | 48/150 [00:00<00:00, 208.99it/s, now=None]
+[2024-12-23 14:10:59] t:  48%|████▊     | 72/150 [00:00<00:00, 220.91it/s, now=None]
+[2024-12-23 14:10:59] t:  64%|██████▍   | 96/150 [00:00<00:00, 224.65it/s, now=None]
+[2024-12-23 14:10:59] t:  79%|███████▉  | 119/150 [00:00<00:00, 224.94it/s, now=None]
+[2024-12-23 14:10:59] t:  95%|█████████▍| 142/150 [00:00<00:00, 200.95it/s, now=None]
+[2024-12-23 14:10:59] Moviepy - Done !
+[2024-12-23 14:10:59] Moviepy - video ready C:\computer\3\itproject\manyaitools_modules\TANGO\outputs/gradio\test_0\retrieved_motions_0\audio_0_retri_0.mp4
+[2024-12-23 14:11:03] start cmd_wav2lip_1: cd Wav2Lip && python C:\computer\3\itproject\manyaitools_modules\TANGO\Wav2Lip\inference.py --checkpoint_path C:\computer\3\itproject\manyaitools_modules\TANGO\Wav2Lip/checkpoints/wav2lip_gan.pth --face C:\computer\3\itproject\manyaitools_modules\TANGO\outputs/gradio\test_0\retrieved_motions_0\audio_0_retri_0.mp4 --audio C:\computer\3\itproject\manyaitools_modules\TANGO\outputs/saved_audio.wav --outfile C:\computer\3\itproject\manyaitools_modules\TANGO\outputs/gradio\test_0\retrieved_motions_0\audio_0_retri_0.mp4 --nosmooth --out_height 1280
+[2024-12-23 14:11:03] 视频已经生成，路径为：TANGO\outputs\gradio\test_0\retrieved_motions_0文件夹中
+[2024-12-23 14:11:03] [0m
+[2024-12-23 14:11:03] 任务处理完成

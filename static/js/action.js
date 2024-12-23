@@ -15,28 +15,26 @@ function updateTasks() {
 // 渲染任务列表
 function renderTasks() {
     $('#taskContainer').empty();
-    globalTasks.forEach(function(task) {
-        let queueInfo = task.queue_position ? 
-            `<div class="queue-info">队列位置: ${task.queue_position}</div>` : '';
-            
-        let downloadHtml = '';
-        if (task.status === "完成" && task.output_file) {
-            downloadHtml = `
-                <div class="download-actions">
-                    <a href="/static/${task.output_file}" class="download-btn" download>下载视频</a>
-                    <span class="copy-link-btn" onclick="copyDownloadLink('${task.output_file}')">复制下载链接</span>
-                </div>
-            `;
-        }
+    
+    // 对任务进行排序（按创建时间倒序）
+    const sortedTasks = [...globalTasks].sort((a, b) => {
+        return new Date(b.create_time) - new Date(a.create_time);
+    });
+    
+    // 计算序号（最早的任务从1开始）
+    const totalTasks = sortedTasks.length;
+    
+    sortedTasks.forEach((task, index) => {
+        const taskNumber = totalTasks - index; // 计算序号
         
         let taskHtml = `
             <div class="task-item">
                 <div class="task-header">
                     <div class="task-info">
+                        <div><strong>序号:</strong> ${taskNumber}</div>
                         <div><strong>任务ID:</strong> ${task.task_id}</div>
                         <div><strong>状态:</strong> <span class="status-badge ${getStatusClass(task.status)}">${task.status}</span></div>
                         <div><strong>创建时间:</strong> ${task.create_time}</div>
-                        ${queueInfo}
                     </div>
                 </div>
                 <div class="file-info">
@@ -44,7 +42,12 @@ function renderTasks() {
                     <div class="file-item">${task.audio_name}</div>
                 </div>
                 <div class="log-container" id="log-${task.task_id}"></div>
-                ${downloadHtml}
+                ${task.status === "完成" && task.output_file ? `
+                    <div class="download-actions">
+                        <a href="/static/${task.output_file}" class="download-btn" download>下载视频</a>
+                        <span class="copy-link-btn" onclick="copyDownloadLink('${task.output_file}')">复制下载链接</span>
+                    </div>
+                ` : ''}
             </div>
         `;
         $('#taskContainer').append(taskHtml);
