@@ -8,24 +8,26 @@
 <body>
     <h1>口唇同步预训练</h1>
     
-    <div class="train-form">
-        <form id="trainForm">
+    <div class="upload-form">
+        <form id="uploadForm" enctype="multipart/form-data">
             <div class="form-group">
-                <label>训练视频：</label>
-                <input type="file" name="video" accept="video/*" required>
-                <small>支持格式：MP4, AVI, MOV</small>
+                <label for="video">训练视频：</label>
+                <input type="file" id="video" name="video" accept="video/*" required>
             </div>
             <div class="form-group">
-                <label>训练音频：</label>
-                <input type="file" name="audio" accept="audio/*" required>
-                <small>支持格式：MP3, WAV</small>
+                <label for="audio">训练音频：</label>
+                <input type="file" id="audio" name="audio" accept="audio/*" required>
             </div>
-            <button type="submit">开始训练</button>
+            <div class="form-group">
+                <label for="name">训练对象名称：</label>
+                <input type="text" id="name" name="name" required pattern="[a-zA-Z0-9\u4e00-\u9fa5]+" title="只能输入字母、数字、汉字">
+            </div>
+            <button type="submit" id="submitBtn" class="btn btn-primary">上传</button>
         </form>
     </div>
 
     <div class="task-list">
-        <h2>训练任务列表</h2>
+        <h2>任务列表</h2>
         <div id="taskContainer"></div>
     </div>
 

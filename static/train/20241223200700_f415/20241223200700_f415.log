@@ -1,0 +1,1 @@
+C:\ProgramData\miniconda3\envs\digitaltool\python.exe: Error while finding module specification for 'scripts.realtime_inference' (ModuleNotFoundError: No module named 'scripts')
