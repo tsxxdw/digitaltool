@@ -19,17 +19,17 @@
 
 /* 偶数任务项的背景色 */
 .task-item:nth-child(even) {
-    background-color: #f8f9fa;
+    background-color: #e8f4f8;
 }
 
 /* 奇数任务项的背景色 */
 .task-item:nth-child(odd) {
-    background-color: #ffffff;
+    background-color: #f8f0e8;
 }
 
 /* 鼠标悬停效果 */
 .task-item:hover {
-    background-color: #f0f4f8;
+    background-color: #e0edf2;
     transition: background-color 0.3s ease;
 }
 
