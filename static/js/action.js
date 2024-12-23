@@ -108,6 +108,37 @@ function pollTaskStatus(taskId, isRefresh = false) {
         // 滚动到底部
         logContainer.scrollTop(logContainer[0].scrollHeight);
         
+        // 更新任务状态和界面显示
+        const taskItem = logContainer.closest('.task-item');
+        const statusBadge = taskItem.find('.status-badge');
+        
+        // 如果状态发生变化
+        if (statusBadge.text() !== response.status) {
+            // 更新状态标签
+            statusBadge.text(response.status);
+            statusBadge.attr('class', `status-badge ${getStatusClass(response.status)}`);
+            
+            // 更新全局任务列表中的状态
+            const taskIndex = globalTasks.findIndex(t => t.task_id === taskId);
+            if (taskIndex !== -1) {
+                globalTasks[taskIndex].status = response.status;
+                
+                // 如果任务完成且有输出文件，添加下载按钮
+                if (response.status === "完成" && response.output_file) {
+                    globalTasks[taskIndex].output_file = response.output_file;
+                    
+                    // 添加下载按钮
+                    const downloadHtml = `
+                        <div class="download-actions">
+                            <a href="/static/${response.output_file}" class="download-btn" download>下载视频</a>
+                            <span class="copy-link-btn" onclick="copyDownloadLink('${response.output_file}')">复制下载链接</span>
+                        </div>
+                    `;
+                    taskItem.append(downloadHtml);
+                }
+            }
+        }
+        
         // 只有任务正在进行中时才继续轮询
         if (response.status !== "完成" && response.status !== "失败") {
             setTimeout(() => pollTaskStatus(taskId, false), POLLING_INTERVAL);
