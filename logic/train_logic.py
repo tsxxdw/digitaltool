@@ -104,12 +104,18 @@ def convert_audio(input_file, output_path):
         if os.path.exists(temp_path):
             os.remove(temp_path)
 
-def create_yaml_file(task_id):
+def create_yaml_file(task_id, new_video_name, new_audio_name):
     """创建YAML配置文件"""
+    yaml_content = f"""avator_1:
+  preparation: True
+  bbox_shift: 5
+  video_path: {new_video_name}
+  audio_clips:
+    audio_0: {new_audio_name}
+"""
     yaml_path = os.path.join(TRAIN_DIR, task_id, f"{task_id}.yaml")
-    # TODO: 根据实际需求生成YAML文件内容
     with open(yaml_path, 'w', encoding='utf-8') as f:
-        f.write(f"# Configuration for {task_id}\n")
+        f.write(yaml_content)
 
 def process_task_queue():
     """处理任务队列"""
@@ -187,17 +193,17 @@ def upload():
         audio_path = os.path.join(task_dir, f"{task_id}.wav")
         
         try:
-            convert_video(video, video_path)  # 传入文件对象而不是文件名
-            convert_audio(audio, audio_path)  # 传入文件对象而不是文件名
+            convert_video(video, video_path)
+            convert_audio(audio, audio_path)
         except Exception as e:
             shutil.rmtree(task_dir)
             return jsonify({'error': f'文件转换失败: {str(e)}'})
         
-        # 创建YAML文件
-        create_yaml_file(task_id)
-        
         # 创建任务对象
         task = TrainTask(task_id, name, video.filename, audio.filename)
+        
+        # 创建YAML文件
+        create_yaml_file(task_id, task.new_video_name, task.new_audio_name)
         
         # 更新配置文件
         config = load_config()
