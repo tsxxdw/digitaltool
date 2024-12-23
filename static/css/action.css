@@ -17,11 +17,29 @@
     position: relative;
 }
 
+/* 偶数任务项的背景色 */
+.task-item:nth-child(even) {
+    background-color: #f8f9fa;
+}
+
+/* 奇数任务项的背景色 */
+.task-item:nth-child(odd) {
+    background-color: #ffffff;
+}
+
+/* 鼠标悬停效果 */
+.task-item:hover {
+    background-color: #f0f4f8;
+    transition: background-color 0.3s ease;
+}
+
+/* 最后一个任务项不显示分割线 */
 .task-item:last-child {
     border-bottom: none;
     margin-bottom: 0;
 }
 
+/* 添加一个间距，让分割线看起来更清晰 */
 .task-item:not(:last-child) {
     padding-bottom: 30px;
     margin-bottom: 30px;
