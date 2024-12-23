@@ -24,8 +24,11 @@ function renderTasks() {
     // 计算序号（最早的任务从1开始）
     const totalTasks = sortedTasks.length;
     
+    // 创建一个容器来包裹所有任务
+    const tasksWrapper = $('<div class="tasks-wrapper"></div>');
+    
     sortedTasks.forEach((task, index) => {
-        const taskNumber = totalTasks - index; // 计算序号
+        const taskNumber = totalTasks - index;
         
         let taskHtml = `
             <div class="task-item">
@@ -50,11 +53,13 @@ function renderTasks() {
                 ` : ''}
             </div>
         `;
-        $('#taskContainer').append(taskHtml);
+        tasksWrapper.append(taskHtml);
         
         // 初始加载任务日志
         pollTaskStatus(task.task_id, true);
     });
+    
+    $('#taskContainer').append(tasksWrapper);
 }
 
 // 启动轮询
