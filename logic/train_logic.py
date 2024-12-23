@@ -64,8 +64,8 @@ class TrainTask:
         self.new_audio_name = os.path.abspath(os.path.join(task_dir, f"{task_id}.wav"))
         self.yaml_file = os.path.abspath(os.path.join(task_dir, f"{task_id}.yaml"))
         self.log_file = os.path.abspath(os.path.join(task_dir, f"{task_id}.log"))
-        # 添加 save_path
-        self.save_path = os.path.abspath(os.path.join(task_dir, f"new_{task_id}.mp4"))
+        # 修改 save_path 的文件名格式
+        self.save_path = os.path.abspath(os.path.join(task_dir, f"save_path_{task_id}.mp4"))
         
         self.status = "等待中"
         self.create_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -202,23 +202,41 @@ def process_task_queue():
                         text=True
                     )
                     
-                    return_code = process.wait()
+                    # 循环检查输出文件是否存在
+                    while process.poll() is None:  # 当进程还在运行时
+                        if os.path.exists(save_path):
+                            # 文件存在，标记为完成
+                            end_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                            log_file.write(f"[{end_time}] 训练完成，输出文件已生成\n")
+                            task_info['status'] = "已完成"
+                            save_config(config)
+                            
+                            # 等待3秒
+                            time.sleep(3)
+                            
+                            # 终止进程
+                            try:
+                                process.terminate()  # 尝试温和地终止
+                                time.sleep(1)  # 等待1秒
+                                if process.poll() is None:  # 如果进程还在运行
+                                    process.kill()  # 强制终止
+                                log_file.write(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] 进程已终止\n")
+                            except Exception as e:
+                                log_file.write(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] 终止进程时出错: {str(e)}\n")
+                            
+                            break
+                        
+                        time.sleep(1)  # 每秒检查一次
                     
-                    end_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                    if return_code == 0 and os.path.exists(save_path):  # 检查输出文件是否存在
-                        log_file.write(f"[{end_time}] 训练完成\n")
-                        task_info['status'] = "已完成"
-                    else:
-                        log_file.write(f"[{end_time}] 训练失败，返回码: {return_code}\n")
+                    # 如果循环结束但文件仍不存在，则标记为失败
+                    if not os.path.exists(save_path):
+                        end_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                        log_file.write(f"[{end_time}] 训练失败，未生成输出文件\n")
                         task_info['status'] = "失败"
+                        save_config(config)
+                    
                     log_file.flush()
                 
-                # 更新任务状态
-                with task_lock:
-                    config = load_config()
-                    config[current_task] = task_info
-                    save_config(config)
-                    
             except Exception as e:
                 with open(log_path, 'a', encoding='utf-8') as log_file:
                     error_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
