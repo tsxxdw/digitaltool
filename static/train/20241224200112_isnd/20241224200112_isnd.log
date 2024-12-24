@@ -1,0 +1,54 @@
+[2024-12-24 20:01:18] 开始训练...
+add ffmpeg to path
+Loads checkpoint by local backend from path: ./models/dwpose/dw-ll_ucoco_384.pth
+cuda start
+C:\ProgramData\miniconda3\envs\musetalk\lib\site-packages\torch\utils\_contextlib.py:125: UserWarning: Decorating classes is deprecated and will be disabled in future versions. You should only decorate functions or methods. To preserve the current behavior of class decoration, you can directly decorate the `__init__` method and nothing else.
+  warnings.warn("Decorating classes is deprecated and will be disabled in "
+{'20241224200112_isnd': {'preparation': True, 'bbox_shift': 5, 'video_path': 'C:\\computer\\3\\itproject\\digitaltool\\static\\train\\20241224200112_isnd\\20241224200112_isnd.mp4', 'audio_clips': {'audio_0': 'C:\\computer\\3\\itproject\\digitaltool\\static\\train\\20241224200112_isnd\\20241224200112_isnd.wav'}}}
+avatar_path---------------------: C:\computer\3\itproject\MuseTalk\results\20241224200112_isnd
+*********************************
+  creating avator: 20241224200112_isnd
+*********************************
+preparing data materials ... ...
+extracting landmarks...
+reading images...
+  0%|          | 0/300 [00:00<?, ?it/s]  2%|▏         | 5/300 [00:00<00:06, 43.50it/s]  3%|▎         | 10/300 [00:00<00:06, 43.93it/s]  5%|▌         | 15/300 [00:00<00:06, 43.72it/s]  7%|▋         | 20/300 [00:00<00:06, 43.63it/s]  8%|▊         | 25/300 [00:00<00:06, 43.85it/s] 10%|█         | 30/300 [00:00<00:06, 44.18it/s] 12%|█▏        | 35/300 [00:00<00:05, 44.46it/s] 13%|█▎        | 40/300 [00:00<00:05, 46.08it/s] 15%|█▌        | 46/300 [00:00<00:05, 49.25it/s] 18%|█▊        | 54/300 [00:01<00:04, 55.96it/s] 20%|██        | 60/300 [00:01<00:04, 55.14it/s] 22%|██▏       | 66/300 [00:01<00:04, 50.64it/s] 24%|██▍       | 72/300 [00:01<00:04, 47.79it/s] 26%|██▌       | 77/300 [00:01<00:05, 44.08it/s] 27%|██▋       | 82/300 [00:01<00:05, 41.65it/s] 29%|██▉       | 87/300 [00:01<00:05, 42.16it/s] 31%|███       | 92/300 [00:02<00:04, 42.48it/s] 33%|███▎      | 98/300 [00:02<00:04, 46.05it/s] 35%|███▌      | 106/300 [00:02<00:03, 54.76it/s] 38%|███▊      | 114/300 [00:02<00:03, 61.00it/s] 41%|████      | 122/300 [00:02<00:02, 66.12it/s] 44%|████▎     | 131/300 [00:02<00:02, 72.09it/s] 46%|████▋     | 139/300 [00:02<00:02, 61.20it/s] 49%|████▊     | 146/300 [00:02<00:02, 55.15it/s] 51%|█████     | 152/300 [00:03<00:02, 51.80it/s] 53%|█████▎    | 158/300 [00:03<00:02, 48.75it/s] 55%|█████▍    | 164/300 [00:03<00:02, 47.38it/s] 56%|█████▋    | 169/300 [00:03<00:02, 46.89it/s] 58%|█████▊    | 174/300 [00:03<00:02, 46.06it/s] 60%|█████▉    | 179/300 [00:03<00:02, 45.33it/s] 61%|██████▏   | 184/300 [00:03<00:02, 44.68it/s] 63%|██████▎   | 189/300 [00:03<00:02, 45.53it/s] 66%|██████▌   | 197/300 [00:03<00:01, 53.71it/s] 68%|██████▊   | 204/300 [00:04<00:01, 56.70it/s] 71%|███████   | 212/300 [00:04<00:01, 61.45it/s] 73%|███████▎  | 220/300 [00:04<00:01, 65.59it/s] 76%|███████▋  | 229/300 [00:04<00:01, 70.66it/s] 79%|███████▉  | 238/300 [00:04<00:00, 73.62it/s] 82%|████████▏ | 246/300 [00:04<00:00, 72.17it/s] 85%|████████▍ | 254/300 [00:04<00:00, 62.49it/s] 87%|████████▋ | 261/300 [00:04<00:00, 55.74it/s] 89%|████████▉ | 267/300 [00:05<00:00, 51.57it/s] 91%|█████████ | 273/300 [00:05<00:00, 48.54it/s] 93%|█████████▎| 278/300 [00:05<00:00, 46.81it/s] 94%|█████████▍| 283/300 [00:05<00:00, 45.70it/s] 96%|█████████▌| 288/300 [00:05<00:00, 45.20it/s] 98%|█████████▊| 293/300 [00:05<00:00, 41.63it/s]100%|█████████▉| 299/300 [00:05<00:00, 44.15it/s]100%|██████████| 300/300 [00:05<00:00, 51.14it/s]
+get key_landmark and face bounding boxes with the bbox_shift: 5
+  0%|          | 0/300 [00:00<?, ?it/s]  0%|          | 0/300 [00:01<?, ?it/s]
+Traceback (most recent call last):
+  File "C:\ProgramData\miniconda3\envs\musetalk\lib\runpy.py", line 196, in _run_module_as_main
+    return _run_code(code, main_globals, None,
+  File "C:\ProgramData\miniconda3\envs\musetalk\lib\runpy.py", line 86, in _run_code
+    exec(code, run_globals)
+  File "C:\computer\3\itproject\MuseTalk\tsxxdw\realtime_inference.py", line 332, in <module>
+    avatar = Avatar(
+  File "C:\ProgramData\miniconda3\envs\musetalk\lib\site-packages\torch\utils\_contextlib.py", line 115, in decorate_context
+    return func(*args, **kwargs)
+  File "C:\ProgramData\miniconda3\envs\musetalk\lib\site-packages\torch\utils\_contextlib.py", line 129, in <lambda>
+    func = cast(F, lambda *args, **kwargs: orig_func(*args, **kwargs))
+  File "C:\computer\3\itproject\MuseTalk\tsxxdw\realtime_inference.py", line 78, in __init__
+    self.init()
+  File "C:\computer\3\itproject\MuseTalk\tsxxdw\realtime_inference.py", line 108, in init
+    self.prepare_material()
+  File "C:\computer\3\itproject\MuseTalk\tsxxdw\realtime_inference.py", line 158, in prepare_material
+    coord_list, frame_list = get_landmark_and_bbox(input_img_list, self.bbox_shift)
+  File "C:\computer\3\itproject\MuseTalk\musetalk\utils\preprocessing.py", line 181, in get_landmark_and_bbox
+    bbox = fa.get_detections_for_batch(np.asarray(fb))
+  File "C:\computer\3\itproject\MuseTalk\musetalk/utils\face_detection\api.py", line 73, in get_detections_for_batch
+    detected_faces = self.face_detector.detect_from_batch(images.copy())
+  File "C:\computer\3\itproject\MuseTalk\musetalk/utils\face_detection\detection\sfd\sfd_detector.py", line 42, in detect_from_batch
+    bboxlists = batch_detect(self.face_detector, images, device=self.device)
+  File "C:\computer\3\itproject\MuseTalk\musetalk/utils\face_detection\detection\sfd\detect.py", line 68, in batch_detect
+    olist = net(imgs)
+  File "C:\ProgramData\miniconda3\envs\musetalk\lib\site-packages\torch\nn\modules\module.py", line 1501, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "C:\computer\3\itproject\MuseTalk\musetalk/utils\face_detection\detection\sfd\net_s3fd.py", line 71, in forward
+    h = F.relu(self.conv1_1(x))
+  File "C:\ProgramData\miniconda3\envs\musetalk\lib\site-packages\torch\nn\modules\module.py", line 1501, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "C:\ProgramData\miniconda3\envs\musetalk\lib\site-packages\torch\nn\modules\conv.py", line 463, in forward
+    return self._conv_forward(input, self.weight, self.bias)
+  File "C:\ProgramData\miniconda3\envs\musetalk\lib\site-packages\torch\nn\modules\conv.py", line 459, in _conv_forward
+    return F.conv2d(input, weight, bias, self.stride,
+KeyboardInterrupt
+[0m^C^C

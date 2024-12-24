@@ -54,7 +54,6 @@ function renderTasks() {
                             <div class="info-cell file-path"><strong>转换后音频:</strong> <span class="path-text">${task.new_audio_name}</span></div>
                         </div>
                     </div>
-                    <button class="delete-btn" onclick="deleteTask('${task.id}')">×</button>
                 </div>
                 <div class="log-container" id="log-${task.id}"></div>
             </div>

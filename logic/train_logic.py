@@ -19,7 +19,6 @@ bp = Blueprint('train', __name__)
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 
 # 配置文件路径
-CONFIG_FILE = os.path.join(ROOT_DIR, 'config/train_data_config.json')
 SYSTEM_SETTINGS_FILE = os.path.join(ROOT_DIR, 'config/system_setting.json')
 TRAIN_DIR = os.path.join(ROOT_DIR, 'static/train')
 
@@ -27,9 +26,12 @@ TRAIN_DIR = os.path.join(ROOT_DIR, 'static/train')
 os.makedirs('config', exist_ok=True)
 os.makedirs(TRAIN_DIR, exist_ok=True)
 
+# 存储任务信息的全局字典
+train_tasks = {}
+
 # 任务队列和锁
 current_task = None
-task_queue = []  # 存储 TrainTask 对象，而不是仅存储 task_id
+task_queue = []  # 存储 TrainTask 对象
 task_lock = threading.Lock()
 task_thread = None
 
@@ -85,18 +87,6 @@ class TrainTask:
             "new_audio_name": self.new_audio_name,
             "save_path": self.save_path  # 添加到配置中
         }
-
-def load_config():
-    """加载配置文件"""
-    if os.path.exists(CONFIG_FILE):
-        with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
-            return json.load(f)
-    return {}
-
-def save_config(config):
-    """保存配置文件"""
-    with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
-        json.dump(config, f, ensure_ascii=False, indent=4)
 
 def generate_task_id():
     """生成任务ID - 年月日时分秒 + 4位随机字母"""
@@ -167,41 +157,6 @@ def get_command(yaml_path, save_path):
         # Linux/macOS 环境下，先进入目录，然后激活环境并执行命令
         return f'cd {MUSETALK} && source /root/miniconda3/etc/profile.d/conda.sh && conda activate musetalk && python -m tsxxdw.realtime_inference --inference_config {yaml_path} --save_path {save_path}'
 
-def init_task_queue():
-    """初始化任务队列，加载未完成的任务"""
-    try:
-        config = load_config()
-        # 按创建时间排序
-        sorted_tasks = sorted(
-            [(task_id, task_info) for task_id, task_info in config.items()],
-            key=lambda x: x[1]['create_time']
-        )
-        
-        for task_id, task_info in sorted_tasks:
-            if task_info['status'] in ['等待中', '训练中']:
-                # 创建 TrainTask 对象
-                task = TrainTask(
-                    task_id=task_id,
-                    name=task_info['name'],
-                    video_name=task_info['video_name'],
-                    audio_name=task_info['audio_name']
-                )
-                task.status = '等待中'  # 重置状态
-                
-                # 更新配置
-                config[task_id] = task.to_dict()
-                
-                # 添加到队列
-                with task_lock:
-                    task_queue.append(task)
-        
-        # 保存更新后的配置
-        save_config(config)
-        print(f"已加载 {len(task_queue)} 个未完成的任务到队列")
-        
-    except Exception as e:
-        print(f"初始化任务队列时出错: {str(e)}")
-
 def process_task_queue():
     """处理任务队列"""
     global current_task
@@ -209,14 +164,8 @@ def process_task_queue():
         try:
             with task_lock:
                 if not current_task and task_queue:
-                    current_task = task_queue[0]  # 现在是 TrainTask 对象
-                    config = load_config()
-                    task_info = config[current_task.task_id]
-                    
-                    # 更新状态为训练中
-                    task_info['status'] = "训练中"
+                    current_task = task_queue[0]
                     current_task.status = "训练中"
-                    save_config(config)
                 else:
                     time.sleep(3)
                     continue
@@ -247,12 +196,7 @@ def process_task_queue():
                             log_file.write(f"[{end_time}] 训练完成，输出文件已生成\n")
                             
                             # 更新状态
-                            with task_lock:
-                                config = load_config()
-                                task_info = config[current_task.task_id]
-                                task_info['status'] = "已完成"
-                                current_task.status = "已完成"
-                                save_config(config)
+                            current_task.status = "已完成"
                             
                             time.sleep(3)
                             
@@ -273,12 +217,8 @@ def process_task_queue():
                         end_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                         log_file.write(f"[{end_time}] 训练失败，未生成输出文件\n")
                         
-                        with task_lock:
-                            config = load_config()
-                            task_info = config[current_task.task_id]
-                            task_info['status'] = "失败"
-                            current_task.status = "失败"
-                            save_config(config)
+                        # 更新状态
+                        current_task.status = "失败"
                     
                     log_file.flush()
                 
@@ -287,15 +227,7 @@ def process_task_queue():
                     error_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                     log_file.write(f"[{error_time}] 执行出错: {str(e)}\n")
                 
-                with task_lock:
-                    config = load_config()
-                    task_info = config[current_task.task_id]
-                    task_info['status'] = "失败"
-                    current_task.status = "失败"
-                    save_config(config)
-            
             finally:
-                # 任务处理完成后，从队列中移除并重置当前任务
                 with task_lock:
                     if task_queue and task_queue[0] == current_task:
                         task_queue.pop(0)
@@ -344,14 +276,12 @@ def upload():
         # 创建YAML文件
         create_yaml_file(task_id, task.new_video_name, task.new_audio_name)
         
-        # 更新配置文件
-        config = load_config()
-        config[task_id] = task.to_dict()
-        save_config(config)
+        # 存储到内存中
+        train_tasks[task_id] = task
         
         # 添加到任务队列
         with task_lock:
-            task_queue.append(task)  # 添加 TrainTask 对象而不是 task_id
+            task_queue.append(task)
         
         return jsonify({'success': True})
         
@@ -360,16 +290,15 @@ def upload():
 
 @bp.route('/train/tasks')
 def get_tasks():
-    return jsonify(load_config())
+    return jsonify({task_id: task.to_dict() for task_id, task in train_tasks.items()})
 
 @bp.route('/train/task_status/<task_id>')
 def task_status(task_id):
-    config = load_config()
-    if task_id not in config:
+    if task_id not in train_tasks:
         return jsonify({'error': '任务不存在'})
     
-    task_info = config[task_id]
-    log_path = os.path.join(TRAIN_DIR, task_id, task_info['log_file'])
+    task = train_tasks[task_id]
+    log_path = task.log_file
     
     # 读取日志文件
     logs = []
@@ -377,18 +306,16 @@ def task_status(task_id):
         with open(log_path, 'r', encoding='utf-8') as f:
             logs = f.readlines()
     
-    # 如果是页面刷新
     is_refresh = request.args.get('refresh', 'false') == 'true'
     if is_refresh:
         return jsonify({
-            'status': task_info['status'],
+            'status': task.status,
             'log': logs,
             'new_logs': []
         })
     else:
-        # 获取新的日志（这里可以优化为只返回新的部分）
         return jsonify({
-            'status': task_info['status'],
+            'status': task.status,
             'log': [],
             'new_logs': logs
         })
@@ -412,38 +339,33 @@ def update_name():
 
 @bp.route('/train/delete_task', methods=['POST'])
 def delete_task():
-    global current_task
     task_id = request.form['task_id']
     
-    config = load_config()
-    if task_id not in config:
+    if task_id not in train_tasks:
         return jsonify({'error': '任务不存在'})
     
     try:
         # 如果任务正在训练中，需要先终止进程
         with task_lock:
-            if current_task == task_id:
-                # 获取当前任务的进程
-                for task in task_queue:
-                    if task.task_id == task_id and task.process:
-                        try:
-                            task.process.terminate()  # 终止进程
-                            task.process.wait()       # 等待进程结束
-                        except:
-                            pass  # 忽略终止进程时的错误
+            if current_task and current_task.task_id == task_id:
+                if current_task.process:
+                    try:
+                        current_task.process.terminate()
+                        current_task.process.wait()
+                    except:
+                        pass
                 current_task = None
             
             # 从任务队列中移除
-            task_queue[:] = [t for t in task_queue if t != task_id]
+            task_queue[:] = [t for t in task_queue if t.task_id != task_id]
         
         # 删除任务目录
         task_dir = os.path.join(TRAIN_DIR, task_id)
         if os.path.exists(task_dir):
             shutil.rmtree(task_dir)
         
-        # 从配置文件中删除
-        del config[task_id]
-        save_config(config)
+        # 从内存中删除
+        del train_tasks[task_id]
         
         return jsonify({'success': True})
         

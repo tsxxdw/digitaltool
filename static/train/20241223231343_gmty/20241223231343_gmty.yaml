@@ -1,6 +1,0 @@
-20241223231343_gmty:
-  preparation: True
-  bbox_shift: 5
-  video_path: C:\computer\3\itproject\digitaltool\static\train\20241223231343_gmty\20241223231343_gmty.mp4
-  audio_clips:
-    audio_0: C:\computer\3\itproject\digitaltool\static\train\20241223231343_gmty\20241223231343_gmty.wav
