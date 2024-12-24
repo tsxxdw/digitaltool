@@ -34,6 +34,12 @@ function renderTasks() {
                             <div class="info-cell"><strong>序号:</strong> ${taskNumber}</div>
                             <div class="info-cell"><strong>状态:</strong> <span class="status-badge ${getStatusClass(task.status)}">${task.status}</span></div>
                             <div class="info-cell"><strong>创建时间:</strong> ${task.create_time}</div>
+                            ${task.status === "已完成" ? 
+                                `<div class="info-cell">
+                                    <button onclick="saveTrainPerson('${task.id}')" class="save-btn">保存训练人物</button>
+                                </div>` : 
+                                ''
+                            }
                         </div>
                         <div class="info-row">
                             <div class="info-cell name-cell">
@@ -229,4 +235,17 @@ $(window).on('unload', function() {
     if (pollingTimer) {
         clearInterval(pollingTimer);
     }
-}); 
+});
+
+// 保存训练人物
+function saveTrainPerson(taskId) {
+    $.post('/train/save_person', {
+        task_id: taskId
+    }, function(response) {
+        if (response.error) {
+            alert(response.error);
+        } else {
+            alert('保存成功！');
+        }
+    });
+} 

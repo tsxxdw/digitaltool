@@ -22,9 +22,13 @@ ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 SYSTEM_SETTINGS_FILE = os.path.join(ROOT_DIR, 'config/system_setting.json')
 TRAIN_DIR = os.path.join(ROOT_DIR, 'static/train')
 
-# 确保目录存在
-os.makedirs('config', exist_ok=True)
+# 清空 TRAIN_DIR 目录
+if os.path.exists(TRAIN_DIR):
+    shutil.rmtree(TRAIN_DIR)
 os.makedirs(TRAIN_DIR, exist_ok=True)
+
+# 确保 config 目录存在
+os.makedirs('config', exist_ok=True)
 
 # 存储任务信息的全局字典
 train_tasks = {}
@@ -371,3 +375,36 @@ def delete_task():
         
     except Exception as e:
         return jsonify({'error': f'删除任务失败: {str(e)}'}) 
+
+@bp.route('/train/save_person', methods=['POST'])
+def save_person():
+    try:
+        task_id = request.form['task_id']
+        
+        if task_id not in train_tasks:
+            return jsonify({'error': '任务不存在'})
+            
+        task = train_tasks[task_id]
+        if task.status != "已完成":
+            return jsonify({'error': '只能保存已完成的任务'})
+            
+        # 确保目标目录存在
+        sync_yaml_dir = os.path.join(ROOT_DIR, 'static/sync/yaml')
+        os.makedirs(sync_yaml_dir, exist_ok=True)
+        
+        # 复制yaml文件
+        yaml_filename = f"{task_id}.yaml"
+        source_yaml = task.yaml_file
+        target_yaml = os.path.join(sync_yaml_dir, yaml_filename)
+        shutil.copy2(source_yaml, target_yaml)
+        
+        # 创建txt文件
+        txt_filename = f"{task_id}.txt"
+        txt_path = os.path.join(sync_yaml_dir, txt_filename)
+        with open(txt_path, 'w', encoding='utf-8') as f:
+            f.write(task.name)
+            
+        return jsonify({'success': True})
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}) 

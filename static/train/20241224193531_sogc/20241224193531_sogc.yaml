@@ -1,6 +1,0 @@
-20241224193531_sogc:
-  preparation: True
-  bbox_shift: 5
-  video_path: C:\computer\3\itproject\digitaltool\static\train\20241224193531_sogc\20241224193531_sogc.mp4
-  audio_clips:
-    audio_0: C:\computer\3\itproject\digitaltool\static\train\20241224193531_sogc\20241224193531_sogc.wav
