@@ -7,24 +7,22 @@
 }
 
 .task-item {
-    background: var(--card-background);
-    border-radius: 10px;
+    background: #fff;
+    border-radius: 8px;
     padding: 20px;
     margin-bottom: 20px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    animation: fadeIn 0.5s ease-out;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .log-container {
     background: #f8f9fa;
-    border-radius: 5px;
-    padding: 15px;
-    margin-top: 15px;
+    padding: 10px;
+    border-radius: 4px;
     max-height: 200px;
     overflow-y: auto;
-    font-family: 'Courier New', monospace;
-    font-size: 0.9rem;
-    border: 1px solid #e9ecef;
+    font-family: monospace;
+    font-size: 14px;
+    margin-top: 10px;
 }
 
 .modal {
@@ -93,14 +91,92 @@
 }
 
 .task-info {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 10px;
     margin-bottom: 15px;
 }
 
-.task-info > div {
-    background: #f8f9fa;
-    padding: 10px;
-    border-radius: 5px;
+.info-row {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 10px;
+}
+
+.info-cell {
+    flex: 1;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.status-waiting {
+    background: #ffd700;
+    color: #000;
+}
+
+.status-generating {
+    background: #1e90ff;
+    color: #fff;
+}
+
+.status-complete {
+    background: #32cd32;
+    color: #fff;
+}
+
+.status-failed {
+    background: #ff4500;
+    color: #fff;
+}
+
+.progress-bar {
+    background: #f0f0f0;
+    border-radius: 4px;
+    height: 20px;
+    position: relative;
+    margin: 10px 0;
+}
+
+.progress {
+    background: #4CAF50;
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.progress-text {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    color: #000;
+    font-size: 12px;
+}
+
+.download-actions {
+    margin-top: 15px;
+    display: flex;
+    gap: 10px;
+}
+
+.download-btn,
+.copy-link-btn {
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    border: none;
+    font-size: 14px;
+}
+
+.download-btn {
+    background: #4CAF50;
+    color: white;
+    text-decoration: none;
+}
+
+.copy-link-btn {
+    background: #2196F3;
+    color: white;
 } 

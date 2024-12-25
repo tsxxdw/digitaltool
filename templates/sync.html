@@ -15,7 +15,7 @@
                 <select name="trained_video" required>
                     <option value="">请选择...</option>
                     {% for video in trained_videos %}
-                    <option value="{{ video.path }}">训练任务 {{ video.task_id }}</option>
+                    <option value="{{ video.id }}">{{ video.name }}</option>
                     {% endfor %}
                 </select>
             </div>

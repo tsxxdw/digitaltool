@@ -1,28 +1,81 @@
+let globalTasks = {};
+const POLLING_INTERVAL = 2000;  // 2秒
+
+function renderTasks() {
+    const container = $('#taskContainer');
+    container.empty();
+    
+    const taskArray = Object.entries(globalTasks).map(([id, task]) => ({
+        id,
+        ...task
+    })).sort((a, b) => new Date(b.create_time) - new Date(a.create_time));
+    
+    taskArray.forEach((task, index) => {
+        const taskNumber = taskArray.length - index;
+        
+        let taskHtml = `
+            <div class="task-item" data-task-id="${task.id}">
+                <div class="task-header">
+                    <div class="task-info">
+                        <div class="info-row">
+                            <div class="info-cell"><strong>序号:</strong> ${taskNumber}</div>
+                            <div class="info-cell"><strong>状态:</strong> <span class="status-badge ${getStatusClass(task.status)}">${task.status}</span></div>
+                            <div class="info-cell"><strong>创建时间:</strong> ${task.create_time}</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-cell"><strong>训练对象:</strong> ${task.person_name}</div>
+                            <div class="info-cell"><strong>音频文件:</strong> ${task.audio_name}</div>
+                        </div>
+                        ${task.progress ? `
+                        <div class="progress-bar">
+                            <div class="progress" style="width: ${task.progress}%"></div>
+                            <span class="progress-text">${task.progress}%</span>
+                        </div>
+                        ` : ''}
+                    </div>
+                </div>
+                <div class="log-container" id="log-${task.id}"></div>
+                ${task.output_file ? `
+                    <div class="download-actions">
+                        <a href="${task.output_file}" class="download-btn" download>下载视频</a>
+                        <button onclick="copyDownloadLink('${task.output_file}')" class="copy-link-btn">复制下载链接</button>
+                    </div>
+                ` : ''}
+            </div>
+        `;
+        container.append(taskHtml);
+    });
+}
+
+function copyDownloadLink(filePath) {
+    const fullUrl = `${window.location.origin}/${filePath}`;
+    navigator.clipboard.writeText(fullUrl).then(() => {
+        alert('下载链接已复制到剪贴板');
+    });
+}
+
 // 更新任务列表
 function updateTasks() {
     $.get('/sync/tasks', function(tasks) {
-        $('#taskContainer').empty();
-        tasks.forEach(function(task) {
-            let taskHtml = `
-                <div class="task-item">
-                    <div><strong>任务ID:</strong> ${task.task_id}</div>
-                    <div><strong>状态:</strong> ${task.status}</div>
-                    <div><strong>创建时间:</strong> ${task.create_time}</div>
-                    <div class="log-container" id="log-${task.task_id}"></div>
-                    ${task.output_file ? `
-                        <div class="download-actions">
-                            <a href="${task.output_file}" class="download-btn" download>下载视频</a>
-                            <span class="copy-link-btn" onclick="showDownloadLink('${task.output_file}')">复制下载链接</span>
-                        </div>
-                    ` : ''}
-                </div>
-            `;
-            $('#taskContainer').append(taskHtml);
-            
-            // 获取任务状态和日志
-            pollTaskStatus(task.task_id);
-        });
+        globalTasks = tasks;
+        renderTasks();
+        startPolling();
     });
+}
+
+// 启动轮询
+function startPolling() {
+    if (pollingTimer) {
+        clearInterval(pollingTimer);
+    }
+    
+    pollingTimer = setInterval(() => {
+        Object.entries(globalTasks).forEach(([taskId, task]) => {
+            if (task.status !== "已完成" && task.status !== "生成失败") {
+                pollTaskStatus(taskId);
+            }
+        });
+    }, POLLING_INTERVAL);
 }
 
 // 轮询任务状态
@@ -30,19 +83,36 @@ function pollTaskStatus(taskId) {
     $.get(`/sync/task_status/${taskId}`, function(response) {
         if (response.error) return;
         
-        $(`#log-${taskId}`).html(response.log.join('<br>'));
+        // 更新任务状态
+        globalTasks[taskId].status = response.status;
+        globalTasks[taskId].progress = response.progress;
+        globalTasks[taskId].output_file = response.output_file;
+        globalTasks[taskId].log = response.log;
         
-        if (response.status === "处理中") {
-            setTimeout(() => pollTaskStatus(taskId), 2000);
-        }
+        // 重新渲染任务列表
+        renderTasks();
     });
 }
 
 // 显示下载链接模态框
-function showDownloadLink(link) {
-    const fullLink = window.location.origin + link;
-    $('#downloadLink').text(fullLink);
-    $('#linkModal').show();
+function showDownloadModal(link) {
+    const modal = document.getElementById('linkModal');
+    const downloadLink = document.getElementById('downloadLink');
+    downloadLink.textContent = `${window.location.origin}/${link}`;
+    modal.style.display = 'block';
+}
+
+// 关闭模态框
+document.querySelector('.close').onclick = function() {
+    document.getElementById('linkModal').style.display = 'none';
+}
+
+// 点击模态框外部关闭
+window.onclick = function(event) {
+    const modal = document.getElementById('linkModal');
+    if (event.target == modal) {
+        modal.style.display = 'none';
+    }
 }
 
 // 复制下载链接
@@ -67,15 +137,10 @@ function copyDownloadLink() {
 // 页面加载完成后执行
 $(document).ready(function() {
     // 处理表单提交
-    $('#syncForm').submit(function(e) {
+    $('#syncForm').on('submit', function(e) {
         e.preventDefault();
         
-        let formData = new FormData(this);
-        
-        // 禁用提交按钮
-        let submitButton = $(this).find('button[type="submit"]');
-        submitButton.prop('disabled', true);
-        submitButton.text('提交中...');
+        const formData = new FormData(this);
         
         $.ajax({
             url: '/sync/upload',
@@ -84,16 +149,15 @@ $(document).ready(function() {
             processData: false,
             contentType: false,
             success: function(response) {
-                alert('生成任务已提交，任务ID: ' + response.task_id);
-                updateTasks();
+                if (response.error) {
+                    alert(response.error);
+                } else {
+                    updateTasks();
+                    $('#syncForm')[0].reset();
+                }
             },
-            error: function(xhr) {
-                alert('提交失败: ' + xhr.responseJSON.error);
-            },
-            complete: function() {
-                // 恢复提交按钮
-                submitButton.prop('disabled', false);
-                submitButton.text('开始生成');
+            error: function() {
+                alert('上传失败，请重试');
             }
         });
     });
@@ -110,9 +174,16 @@ $(document).ready(function() {
         }
     });
 
-    // 页面加载时更新任务列表
+    // 初始加载任务列表
     updateTasks();
     
     // 定期更新任务列表
     setInterval(updateTasks, 5000);
+});
+
+// 在页面卸载时清除定时器
+$(window).on('unload', function() {
+    if (pollingTimer) {
+        clearInterval(pollingTimer);
+    }
 }); 
