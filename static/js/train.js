@@ -205,6 +205,7 @@ $(document).ready(function() {
         formData.append('name', name);
         
         $('#submitBtn').prop('disabled', true);
+        $('.loading-overlay').show(); // 显示加载圈
         
         $.ajax({
             url: '/train/upload',
@@ -225,6 +226,7 @@ $(document).ready(function() {
             },
             complete: function() {
                 $('#submitBtn').prop('disabled', false);
+                $('.loading-overlay').hide(); // 隐藏加载圈
             }
         });
         
