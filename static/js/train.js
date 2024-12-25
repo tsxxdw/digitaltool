@@ -86,41 +86,43 @@ function startPolling() {
 }
 
 // 轮询任务状态
-function pollTaskStatus(taskId, isRefresh = false) {
-    $.get(`/train/task_status/${taskId}?refresh=${isRefresh}`, function(response) {
+function pollTaskStatus(taskId) {
+    $.get(`/train/task_status/${taskId}`, function(response) {
         if (response.error) return;
-        
-        const logContainer = $(`#log-${taskId}`);
-        
-        // 更新日志
-        if (isRefresh) {
-            logContainer.empty();
-            response.log.forEach(log => {
-                logContainer.append(`<div class="log-line">${log}</div>`);
-            });
-        } else if (response.new_logs && response.new_logs.length > 0) {
-            response.new_logs.forEach(log => {
-                logContainer.append(`<div class="log-line">${log}</div>`);
-            });
-        }
-        
-        // 滚动到底部
-        logContainer.scrollTop(logContainer[0].scrollHeight);
         
         // 更新任务状态
         if (globalTasks[taskId].status !== response.status) {
             globalTasks[taskId].status = response.status;
-            const statusBadge = logContainer.closest('.task-item').find('.status-badge');
-            statusBadge.text(response.status);
-            statusBadge.attr('class', `status-badge ${getStatusClass(response.status)}`);
             
-            // 如果任务完成，添加删除按钮
+            // 更新状态显示
+            const statusElement = $(`.task-item[data-task-id="${taskId}"] .status-badge`);
+            statusElement.text(response.status);
+            statusElement.attr('class', `status-badge ${getStatusClass(response.status)}`);
+            
+            // 如果状态变为"已完成"，添加保存按钮
             if (response.status === "已完成") {
-                const taskItem = logContainer.closest('.task-item');
-                if (!taskItem.find('.delete-btn').length) {
-                    taskItem.find('.task-info').after('<button class="delete-btn" onclick="deleteTask(\'' + taskId + '\')">×</button>');
+                const infoRow = $(`.task-item[data-task-id="${taskId}"] .info-row:first`);
+                if (infoRow.find('.save-btn').length === 0) {
+                    infoRow.append(`
+                        <div class="info-cell">
+                            <button onclick="saveTrainPerson('${taskId}')" class="save-btn">保存训练人物</button>
+                        </div>
+                    `);
                 }
             }
+        }
+        
+        // 更新日志 - 使用最新的完整日志
+        const logContainer = $(`#log-${taskId}`);
+        if (response.logs && response.logs.length > 0) {
+            logContainer.html(response.logs.join('<br>'));
+            // 自动滚动到底部
+            logContainer.scrollTop(logContainer[0].scrollHeight);
+        }
+        
+        // 如果任务还在进行中，继续轮询
+        if (response.status === "训练中" || response.status === "等待中") {
+            setTimeout(() => pollTaskStatus(taskId), 10000);  // 10秒轮询一次
         }
     });
 }

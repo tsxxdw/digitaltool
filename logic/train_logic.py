@@ -310,19 +310,10 @@ def task_status(task_id):
         with open(log_path, 'r', encoding='utf-8') as f:
             logs = f.readlines()
     
-    is_refresh = request.args.get('refresh', 'false') == 'true'
-    if is_refresh:
-        return jsonify({
-            'status': task.status,
-            'log': logs,
-            'new_logs': []
-        })
-    else:
-        return jsonify({
-            'status': task.status,
-            'log': [],
-            'new_logs': logs
-        })
+    return jsonify({
+        'status': task.status,
+        'logs': logs  # 始终返回完整的日志
+    })
 
 @bp.route('/train/update_name', methods=['POST'])
 def update_name():
