@@ -7,11 +7,21 @@ import threading
 import json
 import platform
 import shutil
+from collections import deque
+import time
 
 bp = Blueprint('sync', __name__)
 
 # 存储生成任务信息
 sync_tasks = {}
+# 任务队列
+task_queue = deque()
+# 任务锁
+task_lock = threading.Lock()
+# 任务处理线程
+task_thread = None
+# 是否正在处理任务
+is_processing = False
 
 # 添加配置文件路径
 ROOT_DIR = os.path.dirname(os.path.dirname(__file__))
@@ -28,6 +38,11 @@ class SyncTask:
         self.output_file = None
         self.log = []
         self.progress = 0
+        # 新增属性
+        self.process = None
+        self.cmd = None
+        self.yaml_path = None
+        self.output_path = None
 
 def update_yaml_audio_path(yaml_path, new_audio_path):
     """更新YAML文件中的音频路径"""
@@ -130,64 +145,23 @@ def upload():
         output_filename = f"{datetime.now().strftime('%Y%m%d%H%M%S')}_{generate_random_string(4)}.mp4"
         output_path = os.path.join(out_dir, output_filename)
         
-        # 创建任务
+        # 创建任务对象
         task = SyncTask(task_id, trained_video_id, audio.filename, person_name)
+        task.yaml_path = os.path.abspath(yaml_path)
+        task.output_path = os.path.abspath(output_path)
+        
+        # 存储任务并加入队列
         sync_tasks[task_id] = task
+        with task_lock:
+            task_queue.append(task)
+            queue_position = len(task_queue)
+            if queue_position > 1:
+                task.log.append(f"任务已加入队列,当前位置: {queue_position}")
+            else:
+                task.log.append("任务已加入队列,即将开始处理...")
         
-        # 读取配置文件
-        with open(CONFIG_FILE, 'r') as f:
-            config = json.load(f)
-            
-        # 获取绝对路径
-        yaml_path_abs = os.path.abspath(yaml_path)
-        output_path_abs = os.path.abspath(output_path)
-
-        # 获取MUSETALK路径
-        MUSETALK = config.get('windows_musetalk_path' if platform.system() == 'Windows' else 'linux_musetalk_path', '')
-        if not MUSETALK:
-            raise Exception("MUSETALK路径未配置")
-
-        # 根据操作系统构建命令
-        if platform.system() == 'Windows':
-            cmd = f'cmd /c "cd /d {MUSETALK} && conda activate musetalk && python -m tsxxdw.realtime_inference --inference_config {yaml_path_abs} --save_path {output_path_abs}"'
-        else:
-            cmd = f'cd {MUSETALK} && source /root/miniconda3/etc/profile.d/conda.sh && conda activate musetalk && python -m tsxxdw.realtime_inference --inference_config {yaml_path_abs} --save_path {output_path_abs}"'
-
-        # 打印命令用于调试
-        print("执行的命令：")
-        print(cmd)
-        print("文件路径：")
-        print(f"YAML文件: {yaml_path_abs}")
-        print(f"输出文件: {output_path_abs}")
-
-        # 添加到任务日志
-        task.log.append(f"执行的命令：\n{cmd}")
-        task.log.append(f"YAML文件: {yaml_path_abs}")
-        task.log.append(f"输出文件: {output_path_abs}")
-
-        # 更新yaml文件中的音频路径
-        try:
-            update_yaml_audio_path(yaml_path_abs, converted_audio_path)
-        except Exception as e:
-            return jsonify({'error': str(e)})
-
-        # 启动生成进程
-        process = subprocess.Popen(
-            cmd,
-            shell=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            encoding='utf-8',
-            errors='replace'
-        )
-        
-        # 启动监控线程
-        monitor_thread = threading.Thread(
-            target=monitor_process,
-            args=(process, task, output_path_abs),
-            daemon=True
-        )
-        monitor_thread.start()
+        # 启动任务处理
+        start_task_processing()
         
         # 清理原始音频文件
         if os.path.exists(original_audio_path):
@@ -312,3 +286,99 @@ def generate_task_id():
     timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
     random_str = generate_random_string(4)
     return f"{timestamp}_{random_str}" 
+
+def start_task_processing():
+    """启动任务处理"""
+    global is_processing
+    with task_lock:
+        if not is_processing and task_queue:
+            # 检查是否有正在处理中的任务
+            processing_tasks = [t for t in task_queue if t.status == "生成中"]
+            if not processing_tasks:
+                is_processing = True
+                thread = threading.Thread(target=process_task_queue)
+                thread.daemon = True
+                thread.start() 
+
+def process_task_queue():
+    """处理任务队列"""
+    global current_task, is_processing
+    while True:
+        try:
+            with task_lock:
+                if not task_queue:
+                    is_processing = False
+                    break
+                
+                current_task = task_queue[0]
+                if current_task.status != "等待中":
+                    if current_task.status == "完成" or current_task.status == "失败":
+                        task_queue.popleft()
+                        continue
+                    break
+                
+                current_task.status = "生成中"
+                current_task.log.append("开始处理任务...")
+                
+                # 读取配置文件
+                with open(CONFIG_FILE, 'r') as f:
+                    config = json.load(f)
+                    
+                # 获取MUSETALK路径
+                MUSETALK = config.get('windows_musetalk_path' if platform.system() == 'Windows' else 'linux_musetalk_path', '')
+                if not MUSETALK:
+                    raise Exception("MUSETALK路径未配置")
+
+                # 根据操作系统构建命令
+                if platform.system() == 'Windows':
+                    cmd = f'cmd /c "cd /d {MUSETALK} && conda activate musetalk && python -m tsxxdw.realtime_inference --inference_config {current_task.yaml_path} --save_path {current_task.output_path}"'
+                else:
+                    cmd = f'cd {MUSETALK} && source /root/miniconda3/etc/profile.d/conda.sh && conda activate musetalk && python -m tsxxdw.realtime_inference --inference_config {current_task.yaml_path} --save_path {current_task.output_path}"'
+
+                process = subprocess.Popen(
+                    cmd,
+                    shell=True,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT,
+                    encoding='utf-8',
+                    errors='replace'
+                )
+                current_task.process = process
+
+            try:
+                while True:
+                    line = process.stdout.readline()
+                    if not line and process.poll() is not None:
+                        break
+                        
+                    if line:
+                        current_task.log.append(line.strip())
+                        if "Progress:" in line:
+                            try:
+                                progress = int(line.split("Progress:")[1].strip().rstrip('%'))
+                                current_task.progress = progress
+                            except:
+                                pass
+
+                if process.returncode == 0 and os.path.exists(current_task.output_path):
+                    current_task.status = "完成"
+                    current_task.output_file = os.path.relpath(current_task.output_path).replace('\\', '/')
+                    current_task.log.append("任务处理完成")
+                else:
+                    current_task.status = "失败"
+                    current_task.output_file = None
+                    current_task.log.append(f"任务执行失败，返回码: {process.returncode}")
+                    
+            except Exception as e:
+                current_task.status = "失败"
+                current_task.output_file = None
+                current_task.log.append(f"任务执行异常: {str(e)}")
+                
+            finally:
+                with task_lock:
+                    if current_task.status in ["完成", "失败"]:
+                        task_queue.popleft()
+                    
+        except Exception as e:
+            print(f"任务处理循环出错: {str(e)}")
+            time.sleep(5) 
