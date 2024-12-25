@@ -117,4 +117,24 @@ function stopPolling() {
         clearInterval(pollingTimer);
         pollingTimer = null;
     }
+}
+
+// 显示下载链接模态框
+function showDownloadModal(filePath) {
+    const normalizedPath = filePath.replace(/\\/g, '/');
+    const fullUrl = `${window.location.origin}/${normalizedPath}`;
+    
+    navigator.clipboard.writeText(fullUrl).then(function() {
+        alert('下载链接已复制到剪贴板');
+    }).catch(function(err) {
+        console.error('复制失败:', err);
+        // 降级处理：创建临时输入框
+        const tempInput = document.createElement('input');
+        tempInput.value = fullUrl;
+        document.body.appendChild(tempInput);
+        tempInput.select();
+        document.execCommand('copy');
+        document.body.removeChild(tempInput);
+        alert('下载链接已复制到剪贴板');
+    });
 } 
