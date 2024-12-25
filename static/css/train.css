@@ -1,9 +1,11 @@
 .upload-form {
     background-color: #fff;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    margin-bottom: 30px;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    margin: 20px auto;
+    max-width: 800px;
+    border: 1px solid #edf2f7;
 }
 
 .task-list {
@@ -172,5 +174,125 @@
 
 .save-btn:hover {
     background-color: #45a049;
+}
+
+h1 {
+    text-align: center;
+    color: #333;
+    margin: 30px 0;
+    font-size: 28px;
+}
+
+h2 {
+    color: #333;
+    margin: 20px 0;
+    font-size: 22px;
+}
+
+.task-list {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* 表单输入框样式 */
+.form-group input[type="text"] {
+    width: 100%;
+    height: 40px;
+    padding: 8px 16px;
+    font-size: 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    background-color: #fff;
+    color: #333;
+}
+
+.form-group input[type="text"]:focus {
+    border-color: #4e73df;
+    box-shadow: 0 0 0 3px rgba(78, 115, 223, 0.1);
+    outline: none;
+}
+
+.form-group input[type="text"]:hover {
+    border-color: #bbb;
+}
+
+/* 上传按钮样式 */
+.btn-primary {
+    background-color: #4e73df;
+    color: white;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    text-transform: none;
+    letter-spacing: 0.5px;
+    display: inline-block;
+    text-align: center;
+    min-width: 120px;
+    box-shadow: 0 2px 4px rgba(78, 115, 223, 0.1);
+}
+
+.btn-primary:hover {
+    background-color: #2e59d9;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(78, 115, 223, 0.2);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(78, 115, 223, 0.1);
+}
+
+.btn-primary:disabled {
+    background-color: #b7b9cc;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* 表单组样式 */
+.form-group {
+    margin-bottom: 24px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: 500;
+    color: #333;
+    font-size: 15px;
+}
+
+/* 文件上传按钮样式 */
+.form-group input[type="file"] {
+    display: block;
+    width: 100%;
+    padding: 8px;
+    border: 2px dashed #e0e0e0;
+    border-radius: 6px;
+    background-color: #f8f9fc;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.form-group input[type="file"]:hover {
+    border-color: #4e73df;
+    background-color: #f0f3ff;
+}
+
+/* 错误状态样式 */
+.form-group input[type="text"].error {
+    border-color: #e74a3b;
+}
+
+.form-group .error-message {
+    color: #e74a3b;
+    font-size: 13px;
+    margin-top: 5px;
 }
 </rewritten_file> 
