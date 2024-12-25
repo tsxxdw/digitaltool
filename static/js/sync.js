@@ -1,57 +1,21 @@
 let globalTasks = {};
-const POLLING_INTERVAL = 2000;  // 2秒
+const POLLING_INTERVAL = 5000;  // 5秒
+let pollingTimer = null;
 
-function renderTasks() {
-    const container = $('#taskContainer');
-    container.empty();
-    
-    const taskArray = Object.entries(globalTasks).map(([id, task]) => ({
-        id,
-        ...task
-    })).sort((a, b) => new Date(b.create_time) - new Date(a.create_time));
-    
-    taskArray.forEach((task, index) => {
-        const taskNumber = taskArray.length - index;
-        
-        let taskHtml = `
-            <div class="task-item" data-task-id="${task.id}">
-                <div class="task-header">
-                    <div class="task-info">
-                        <div class="info-row">
-                            <div class="info-cell"><strong>序号:</strong> ${taskNumber}</div>
-                            <div class="info-cell"><strong>状态:</strong> <span class="status-badge ${getStatusClass(task.status)}">${task.status}</span></div>
-                            <div class="info-cell"><strong>创建时间:</strong> ${task.create_time}</div>
-                        </div>
-                        <div class="info-row">
-                            <div class="info-cell"><strong>训练对象:</strong> ${task.person_name}</div>
-                            <div class="info-cell"><strong>音频文件:</strong> ${task.audio_name}</div>
-                        </div>
-                        ${task.progress ? `
-                        <div class="progress-bar">
-                            <div class="progress" style="width: ${task.progress}%"></div>
-                            <span class="progress-text">${task.progress}%</span>
-                        </div>
-                        ` : ''}
-                    </div>
-                </div>
-                <div class="log-container" id="log-${task.id}"></div>
-                ${task.output_file ? `
-                    <div class="download-actions">
-                        <a href="${task.output_file}" class="download-btn" download>下载视频</a>
-                        <button onclick="copyDownloadLink('${task.output_file}')" class="copy-link-btn">复制下载链接</button>
-                    </div>
-                ` : ''}
-            </div>
-        `;
-        container.append(taskHtml);
-    });
-}
-
-function copyDownloadLink(filePath) {
-    const fullUrl = `${window.location.origin}/${filePath}`;
-    navigator.clipboard.writeText(fullUrl).then(() => {
-        alert('下载链接已复制到剪贴板');
-    });
+// 获取状态对应的CSS类
+function getStatusClass(status) {
+    switch(status) {
+        case '等待中':
+            return 'status-waiting';
+        case '生成中':
+            return 'status-generating';
+        case '已完成':
+            return 'status-complete';
+        case '生成失败':
+            return 'status-failed';
+        default:
+            return '';
+    }
 }
 
 // 更新任务列表
@@ -63,80 +27,45 @@ function updateTasks() {
     });
 }
 
-// 启动轮询
-function startPolling() {
-    if (pollingTimer) {
-        clearInterval(pollingTimer);
-    }
+// 渲染任务列表
+function renderTasks() {
+    const taskContainer = $('#taskContainer');
+    taskContainer.empty();
     
-    pollingTimer = setInterval(() => {
-        Object.entries(globalTasks).forEach(([taskId, task]) => {
-            if (task.status !== "已完成" && task.status !== "生成失败") {
-                pollTaskStatus(taskId);
-            }
-        });
-    }, POLLING_INTERVAL);
-}
-
-// 轮询任务状态
-function pollTaskStatus(taskId) {
-    $.get(`/sync/task_status/${taskId}`, function(response) {
-        if (response.error) return;
-        
-        // 更新任务状态
-        globalTasks[taskId].status = response.status;
-        globalTasks[taskId].progress = response.progress;
-        globalTasks[taskId].output_file = response.output_file;
-        globalTasks[taskId].log = response.log;
-        
-        // 重新渲染任务列表
-        renderTasks();
+    const taskArray = Object.values(globalTasks).sort((a, b) => 
+        new Date(b.create_time) - new Date(a.create_time)
+    );
+    
+    taskArray.forEach(task => {
+        const taskHtml = `
+            <div class="task-item">
+                <div class="task-header">
+                    <span class="task-id">#${task.id}</span>
+                    <span class="task-time">${task.create_time}</span>
+                    <span class="task-status ${getStatusClass(task.status)}">${task.status}</span>
+                </div>
+                <div class="task-info">
+                    <div>训练对象：${task.person_name}</div>
+                    <div>音频文件：${task.audio_name}</div>
+                    ${task.progress ? `<div class="progress-bar"><div class="progress" style="width: ${task.progress}%"></div></div>` : ''}
+                </div>
+                ${task.output_file ? `
+                    <div class="task-actions">
+                        <a href="/${task.output_file}" class="download-btn" target="_blank">下载视频</a>
+                        <button onclick="showDownloadModal('${task.output_file}')" class="copy-link-btn">复制链接</button>
+                    </div>
+                ` : ''}
+                <div class="log-container">
+                    ${task.log.join('<br>')}
+                </div>
+            </div>
+        `;
+        taskContainer.append(taskHtml);
     });
 }
 
-// 显示下载链接模态框
-function showDownloadModal(link) {
-    const modal = document.getElementById('linkModal');
-    const downloadLink = document.getElementById('downloadLink');
-    downloadLink.textContent = `${window.location.origin}/${link}`;
-    modal.style.display = 'block';
-}
-
-// 关闭模态框
-document.querySelector('.close').onclick = function() {
-    document.getElementById('linkModal').style.display = 'none';
-}
-
-// 点击模态框外部关闭
-window.onclick = function(event) {
-    const modal = document.getElementById('linkModal');
-    if (event.target == modal) {
-        modal.style.display = 'none';
-    }
-}
-
-// 复制下载链接
-function copyDownloadLink() {
-    const linkText = $('#downloadLink').text();
-    navigator.clipboard.writeText(linkText).then(function() {
-        alert('链接已复制到剪贴板！');
-    }).catch(function(err) {
-        console.error('复制失败:', err);
-        // 回退方案：选择文本
-        const linkElement = document.getElementById('downloadLink');
-        const range = document.createRange();
-        range.selectNode(linkElement);
-        window.getSelection().removeAllRanges();
-        window.getSelection().addRange(range);
-        document.execCommand('copy');
-        window.getSelection().removeAllRanges();
-        alert('链接已复制到剪贴板！');
-    });
-}
-
-// 页面加载完成后执行
+// 表单提交处理
 $(document).ready(function() {
-    // 处理表单提交
     $('#syncForm').on('submit', function(e) {
         e.preventDefault();
         
@@ -161,29 +90,31 @@ $(document).ready(function() {
             }
         });
     });
-
-    // 关闭模态框
-    $('.close').click(function() {
-        $('#linkModal').hide();
-    });
     
-    // 点击模态框外部关闭
-    $(window).click(function(e) {
-        if (e.target == document.getElementById('linkModal')) {
-            $('#linkModal').hide();
-        }
-    });
-
     // 初始加载任务列表
     updateTasks();
-    
-    // 定期更新任务列表
-    setInterval(updateTasks, 5000);
 });
 
-// 在页面卸载时清除定时器
-$(window).on('unload', function() {
+// 开始轮询
+function startPolling() {
+    // 清除现有的轮询
     if (pollingTimer) {
         clearInterval(pollingTimer);
     }
-}); 
+    
+    // 设置新的轮询
+    pollingTimer = setInterval(() => {
+        $.get('/sync/tasks', function(tasks) {
+            globalTasks = tasks;
+            renderTasks();
+        });
+    }, POLLING_INTERVAL);
+}
+
+// 停止轮询
+function stopPolling() {
+    if (pollingTimer) {
+        clearInterval(pollingTimer);
+        pollingTimer = null;
+    }
+} 
