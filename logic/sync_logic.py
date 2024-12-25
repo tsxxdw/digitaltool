@@ -29,6 +29,32 @@ class SyncTask:
         self.log = []
         self.progress = 0
 
+def update_yaml_audio_path(yaml_path, new_audio_path):
+    """更新YAML文件中的音频路径"""
+    try:
+        # 获取当前项目的根目录
+        current_dir = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
+        # 转换为绝对路径
+        absolute_audio_path = os.path.abspath(os.path.join(current_dir, new_audio_path))
+        
+        with open(yaml_path, 'r', encoding='utf-8') as f:
+            yaml_content = f.readlines()
+            
+        new_yaml_content = []
+        for line in yaml_content:
+            if 'audio_0:' in line:
+                # 保持缩进
+                indent = len(line) - len(line.lstrip())
+                new_yaml_content.append(' ' * indent + f'audio_0: {absolute_audio_path}\n')
+            else:
+                new_yaml_content.append(line)
+                
+        with open(yaml_path, 'w', encoding='utf-8') as f:
+            f.writelines(new_yaml_content)
+            
+    except Exception as e:
+        raise Exception(f"更新YAML文件失败: {str(e)}")
+
 @bp.route('/sync')
 def sync():
     # 获取所有已训练的视频文件
@@ -139,51 +165,107 @@ def upload():
         task.log.append(f"YAML文件: {yaml_path_abs}")
         task.log.append(f"输出文件: {output_path_abs}")
 
+        # 更新yaml文件中的音频路径
+        try:
+            update_yaml_audio_path(yaml_path_abs, converted_audio_path)
+        except Exception as e:
+            return jsonify({'error': str(e)})
+
         # 启动生成进程
         process = subprocess.Popen(
             cmd,
             shell=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
-            universal_newlines=True
+            encoding='utf-8',
+            errors='replace'
         )
         
         # 启动监控线程
-        threading.Thread(target=monitor_process, args=(process, task, output_path), daemon=True).start()
+        monitor_thread = threading.Thread(
+            target=monitor_process,
+            args=(process, task, output_path_abs),
+            daemon=True
+        )
+        monitor_thread.start()
         
         # 清理原始音频文件
         if os.path.exists(original_audio_path):
             os.remove(original_audio_path)
             
-        return jsonify({'task_id': task_id})
+        return jsonify({
+            'task_id': task_id,
+            'message': '任务已创建'
+        })
         
     except Exception as e:
         return jsonify({'error': str(e)})
 
-def monitor_process(process, task, output_path):
-    """监控生成进程并更新任务状态"""
-    task.status = "生成中"
+def detect_encoding(text):
+    """检测文本编码"""
+    if isinstance(text, str):
+        return 'utf-8'
     
+    # 尝试常见的编码
+    encodings = ['utf-8', 'gbk', 'gb2312', 'ascii', 'iso-8859-1', 'utf-16', 'big5']
+    
+    # 首先尝试 chardet 检测
+    try:
+        import chardet
+        result = chardet.detect(text)
+        if result and result['encoding']:
+            try:
+                text.decode(result['encoding'])
+                return result['encoding']
+            except:
+                pass
+    except ImportError:
+        pass
+
+    # 如果 chardet 检测失败，尝试预定义的编码列表
+    for encoding in encodings:
+        try:
+            text.decode(encoding)
+            return encoding
+        except:
+            continue
+            
+    # 如果都失败了，使用 latin1（它能解码任何字节序列）
+    return 'latin1'
+
+def safe_decode(text):
+    """安全解码文本"""
+    if isinstance(text, str):
+        return text
+        
+    encoding = detect_encoding(text)
+    return text.decode(encoding)
+
+def monitor_process(process, task, output_path):
+    """监控进程输出"""
+    task.status = "生成中"
     while True:
         line = process.stdout.readline()
         if not line and process.poll() is not None:
             break
             
         if line:
-            line = line.strip()
-            task.log.append(line)
+            # 使用safe_decode处理输出
+            decoded_line = safe_decode(line)
+            task.log.append(decoded_line.strip())
+            print(decoded_line.strip())
             
-            # 解析进度信息
-            if 'Progress:' in line:
+            # 更新进度（如果有进度信息）
+            if "Progress:" in decoded_line:
                 try:
-                    progress = int(line.split(':')[1].strip().rstrip('%'))
+                    progress = int(decoded_line.split("Progress:")[1].strip().rstrip('%'))
                     task.progress = progress
                 except:
                     pass
                     
     if process.returncode == 0:
         task.status = "已完成"
-        task.output_file = output_path.replace('\\', '/').replace('static/', '')
+        task.output_file = os.path.relpath(output_path).replace('\\', '/')
     else:
         task.status = "生成失败"
         
