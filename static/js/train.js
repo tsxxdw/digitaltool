@@ -43,10 +43,8 @@ function renderTasks() {
                         </div>
                         <div class="info-row">
                             <div class="info-cell name-cell">
-                                <strong>训练对象:</strong>
-                                <input type="text" value="${task.name}" 
-                                       ${task.status === "训练中" ? 'disabled' : ''}
-                                       onchange="updateTaskName('${task.id}', this.value)">
+                                <strong>训练对象名称:</strong>
+                                <span class="task-name">${task.name}</span>
                             </div>
                         </div>
                         <div class="info-row">
