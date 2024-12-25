@@ -1,6 +1,0 @@
-20241225193227_rcib:
-  preparation: True
-  bbox_shift: 5
-  video_path: C:\computer\3\itproject\digitaltool\static\train\20241225193227_rcib\20241225193227_rcib.mp4
-  audio_clips:
-    audio_0: C:\computer\3\itproject\digitaltool\static\train\20241225193227_rcib\20241225193227_rcib.wav
