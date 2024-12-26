@@ -74,7 +74,7 @@ def update_yaml_audio_path(yaml_path, new_audio_path):
 def sync():
     # 获取所有已训练的视频文件
     trained_videos = []
-    yaml_dir = os.path.join('static', 'sync', 'yaml')
+    yaml_dir = os.path.join('file', 'sync', 'yaml')
     
     if os.path.exists(yaml_dir):
         for file in os.listdir(yaml_dir):
