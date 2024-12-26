@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, jsonify
+from flask import Blueprint, render_template, request, jsonify, send_from_directory
 import os
 import subprocess
 import uuid
@@ -43,6 +43,10 @@ class SyncTask:
         self.cmd = None
         self.yaml_path = None
         self.output_path = None
+        
+        # 添加日志文件路径
+        task_dir = os.path.join('file', 'sync', 'out', task_id)
+        self.log_file = os.path.abspath(os.path.join(task_dir, f'{task_id}.log'))
 
 def update_yaml_audio_path(yaml_path, new_audio_path):
     """更新YAML文件中的音频路径和preparation参数"""
@@ -387,3 +391,12 @@ def process_task_queue():
         except Exception as e:
             print(f"任务处理循环出错: {str(e)}")
             time.sleep(5) 
+
+# 添加文件访问路由
+@bp.route('/file/sync/out/<path:filename>')
+def serve_file(filename):
+    """提供文件下载服务"""
+    try:
+        return send_from_directory('file/sync/out', filename)
+    except Exception as e:
+        return jsonify({'error': f'文件访问失败: {str(e)}'}), 404 
