@@ -120,34 +120,44 @@ def upload():
         # 生成任务ID
         task_id = generate_task_id()
         
-        # 创建输出目录
-        out_dir = os.path.join('file', 'sync', 'out')
-        os.makedirs(out_dir, exist_ok=True)
+        # 创建任务专属目录
+        task_dir = os.path.join('file', 'sync', 'out', task_id)
+        os.makedirs(task_dir, exist_ok=True)
         
-        # 保存并转换音频文件
-        original_audio_path = os.path.join(out_dir, f"{task_id}_original_{audio.filename}")
-        converted_audio_path = os.path.join(out_dir, f"{task_id}.wav")
-        audio.save(original_audio_path)
+        # 保存并转换音频文件到任务目录
+        converted_audio_path = os.path.join(task_dir, f'{task_id}.wav')
+        audio.save(converted_audio_path)
         
         # 转换音频为WAV格式
         try:
-            if original_audio_path.lower().endswith('.wav'):
-                shutil.copy2(original_audio_path, converted_audio_path)
-            else:
-                cmd = f'ffmpeg -i "{original_audio_path}" "{converted_audio_path}"'
+            if not converted_audio_path.lower().endswith('.wav'):
+                temp_path = converted_audio_path + '.temp'
+                os.rename(converted_audio_path, temp_path)
+                cmd = f'ffmpeg -i "{temp_path}" "{converted_audio_path}"'
                 subprocess.run(cmd, shell=True, check=True)
+                os.remove(temp_path)
         except Exception as e:
-            if os.path.exists(original_audio_path):
-                os.remove(original_audio_path)
+            shutil.rmtree(task_dir)
             return jsonify({'error': f'音频转换失败: {str(e)}'})
-            
-        # 生成输出视频文件名
-        output_filename = f"{datetime.now().strftime('%Y%m%d%H%M%S')}_{generate_random_string(4)}.mp4"
-        output_path = os.path.join(out_dir, output_filename)
+
+        # 复制并修改yaml文件
+        new_yaml_path = os.path.join(task_dir, f'{task_id}.yaml')
+        shutil.copy2(yaml_path, new_yaml_path)
+        
+        # 获取项目根目录的绝对路径
+        root_dir = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
+        # 获取音频文件的绝对路径
+        abs_audio_path = os.path.abspath(converted_audio_path)
+        
+        # 更新yaml文件中的音频路径
+        update_yaml_audio_path(new_yaml_path, abs_audio_path)
+        
+        # 生成输出视频文件路径
+        output_path = os.path.join(task_dir, f'{task_id}_output.mp4')
         
         # 创建任务对象
         task = SyncTask(task_id, trained_video_id, audio.filename, person_name)
-        task.yaml_path = os.path.abspath(yaml_path)
+        task.yaml_path = os.path.abspath(new_yaml_path)  # 使用新的yaml文件路径
         task.output_path = os.path.abspath(output_path)
         
         # 存储任务并加入队列
@@ -162,10 +172,6 @@ def upload():
         
         # 启动任务处理
         start_task_processing()
-        
-        # 清理原始音频文件
-        if os.path.exists(original_audio_path):
-            os.remove(original_audio_path)
             
         return jsonify({
             'task_id': task_id,
