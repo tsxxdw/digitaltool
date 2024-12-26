@@ -107,8 +107,8 @@ def upload():
         trained_video_id = request.form['trained_video']
         
         # 验证训练文件是否存在
-        yaml_path = os.path.join('static', 'sync', 'yaml', f'{trained_video_id}.yaml')
-        txt_path = os.path.join('static', 'sync', 'yaml', f'{trained_video_id}.txt')
+        yaml_path = os.path.join('file', 'sync', 'yaml', f'{trained_video_id}.yaml')
+        txt_path = os.path.join('file', 'sync', 'yaml', f'{trained_video_id}.txt')
         
         if not os.path.exists(yaml_path):
             return jsonify({'error': '所选视频的训练数据不存在'})
@@ -121,7 +121,7 @@ def upload():
         task_id = generate_task_id()
         
         # 创建输出目录
-        out_dir = os.path.join('static', 'sync', 'out')
+        out_dir = os.path.join('file', 'sync', 'out')
         os.makedirs(out_dir, exist_ok=True)
         
         # 保存并转换音频文件
