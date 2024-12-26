@@ -45,13 +45,8 @@ class SyncTask:
         self.output_path = None
 
 def update_yaml_audio_path(yaml_path, new_audio_path):
-    """更新YAML文件中的音频路径"""
+    """更新YAML文件中的音频路径和preparation参数"""
     try:
-        # 获取当前项目的根目录
-        current_dir = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
-        # 转换为绝对路径
-        absolute_audio_path = os.path.abspath(os.path.join(current_dir, new_audio_path))
-        
         with open(yaml_path, 'r', encoding='utf-8') as f:
             yaml_content = f.readlines()
             
@@ -60,7 +55,11 @@ def update_yaml_audio_path(yaml_path, new_audio_path):
             if 'audio_0:' in line:
                 # 保持缩进
                 indent = len(line) - len(line.lstrip())
-                new_yaml_content.append(' ' * indent + f'audio_0: {absolute_audio_path}\n')
+                new_yaml_content.append(' ' * indent + f'audio_0: {new_audio_path}\n')
+            elif 'preparation:' in line:
+                # 保持缩进
+                indent = len(line) - len(line.lstrip())
+                new_yaml_content.append(' ' * indent + 'preparation: False\n')
             else:
                 new_yaml_content.append(line)
                 
