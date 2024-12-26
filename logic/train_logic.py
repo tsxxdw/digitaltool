@@ -380,7 +380,7 @@ def save_person():
             return jsonify({'error': '只能保存已完成的任务'})
             
         # 确保目标目录存在
-        sync_yaml_dir = os.path.join(ROOT_DIR, 'static/sync/yaml')
+        sync_yaml_dir = os.path.join(ROOT_DIR, 'file/sync/yaml')
         os.makedirs(sync_yaml_dir, exist_ok=True)
         
         # 复制yaml文件
