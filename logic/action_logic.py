@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, jsonify
+from flask import Blueprint, render_template, request, jsonify, send_from_directory
 import os
 import subprocess
 import uuid
@@ -309,7 +309,7 @@ def upload():
     task_id = f"{current_time}-{random_str}"
     
     # 创建上传目录
-    upload_dir = os.path.join('static', 'action_uploads', task_id)
+    upload_dir = os.path.join('file', 'action', task_id)
     os.makedirs(upload_dir, exist_ok=True)
     
     # 获取文件扩展名
@@ -488,8 +488,11 @@ def task_status(task_id):
 
 def init_action_module():
     """初始化动作模块"""
+    # 确保目录存在
+    upload_dir = os.path.join('file', 'action')
+    os.makedirs(upload_dir, exist_ok=True)
+    
     # 清空上传目录
-    upload_dir = os.path.join('static', 'action_uploads')
     if os.path.exists(upload_dir):
         for filename in os.listdir(upload_dir):
             file_path = os.path.join(upload_dir, filename)
@@ -500,3 +503,13 @@ def init_action_module():
                     shutil.rmtree(file_path)
             except Exception as e:
                 print(f"删除文件或目录失败: {file_path} - {str(e)}") 
+
+# 添加文件访问路由
+@bp.route('/file/action/<path:filename>')
+def serve_file(filename):
+    """提供文件下载服务"""
+    try:
+        # 从file/action目录提供文件
+        return send_from_directory('file/action', filename)
+    except Exception as e:
+        return jsonify({'error': f'文件访问失败: {str(e)}'}), 404 

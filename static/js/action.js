@@ -221,15 +221,18 @@ function getStatusClass(status) {
 
 // 修改复制链接功能
 function copyDownloadLink(filePath) {
-    // 将反斜杠替换为正斜杠，并确保路径格式正确
-    const normalizedPath = filePath.replace(/\\/g, '/');
-    const fullUrl = `${window.location.origin}/static/${normalizedPath}`;
+    // 确保filePath是从file/action开始的路径
+    const normalizedPath = filePath.startsWith('file/action') 
+        ? filePath 
+        : filePath.substring(filePath.indexOf('file/action'));
+        
+    // 直接使用规范化后的路径
+    const fullUrl = `${window.location.origin}/${normalizedPath}`;
     
     navigator.clipboard.writeText(fullUrl).then(function() {
         alert('下载链接已复制到剪贴板');
     }).catch(function(err) {
         console.error('复制失败:', err);
-        // 降级处理：创建临时输入框
         const tempInput = document.createElement('input');
         tempInput.value = fullUrl;
         document.body.appendChild(tempInput);
