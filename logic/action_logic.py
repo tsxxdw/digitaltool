@@ -85,7 +85,7 @@ class ActionTask:
         self.process = None
         self.cmd = cmd  # 存储命令，稍后执行
         self.log_queue = queue.Queue()
-        self.log_file = os.path.join('static', 'action_uploads', task_id, 'task.log')
+        self.log_file = os.path.join('file', 'action', task_id, 'task.log')
         os.makedirs(os.path.dirname(self.log_file), exist_ok=True)
 
     def add_log(self, message):
