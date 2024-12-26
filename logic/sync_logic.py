@@ -227,31 +227,65 @@ def safe_decode(text):
 def monitor_process(process, task, output_path):
     """监控进程输出"""
     task.status = "生成中"
-    while True:
-        line = process.stdout.readline()
-        if not line and process.poll() is not None:
-            break
-            
-        if line:
-            # 使用safe_decode处理输出
-            decoded_line = safe_decode(line)
-            task.log.append(decoded_line.strip())
-            print(decoded_line.strip())
-            
-            # 更新进度（如果有进度信息）
-            if "Progress:" in decoded_line:
-                try:
-                    progress = int(decoded_line.split("Progress:")[1].strip().rstrip('%'))
-                    task.progress = progress
-                except:
-                    pass
-                    
-    if process.returncode == 0:
-        task.status = "已完成"
-        task.output_file = os.path.relpath(output_path).replace('\\', '/')
-    else:
-        task.status = "生成失败"
+    
+    try:
+        # 确保日志文件目录存在
+        os.makedirs(os.path.dirname(task.log_file), exist_ok=True)
         
+        # 打开日志文件
+        with open(task.log_file, 'w', encoding='utf-8') as log_file:
+            # 写入任务开始信息
+            start_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            log_file.write(f"[{start_time}] 开始处理任务\n")
+            log_file.write(f"[{start_time}] 使用配置文件: {task.yaml_path}\n")
+            log_file.flush()
+            
+            while True:
+                line = process.stdout.readline()
+                if not line and process.poll() is not None:
+                    break
+                    
+                if line:
+                    # 使用safe_decode处理输出
+                    decoded_line = safe_decode(line)
+                    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                    log_message = f"[{timestamp}] {decoded_line.strip()}"
+                    
+                    # 添加到内存日志
+                    task.log.append(log_message)
+                    
+                    # 写入日志文件
+                    log_file.write(log_message + '\n')
+                    log_file.flush()
+                    
+                    # 更新进度（如果有进度信息）
+                    if "Progress:" in decoded_line:
+                        try:
+                            progress = int(decoded_line.split("Progress:")[1].strip().rstrip('%'))
+                            task.progress = progress
+                        except:
+                            pass
+                            
+            # 写入任务完成状态
+            end_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            if process.returncode == 0:
+                task.status = "已完成"
+                task.output_file = os.path.relpath(output_path).replace('\\', '/')
+                log_file.write(f"[{end_time}] 任务完成\n")
+            else:
+                task.status = "生成失败"
+                log_file.write(f"[{end_time}] 任务失败，返回码: {process.returncode}\n")
+                
+    except Exception as e:
+        task.status = "生成失败"
+        # 如果发生异常，尝试记录到日志文件
+        try:
+            with open(task.log_file, 'a', encoding='utf-8') as log_file:
+                error_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                log_file.write(f"[{error_time}] 发生错误: {str(e)}\n")
+        except:
+            pass
+
 @bp.route('/sync/tasks')
 def get_tasks():
     """获取所有任务"""
@@ -352,45 +386,21 @@ def process_task_queue():
                     encoding='utf-8',
                     errors='replace'
                 )
-                current_task.process = process
-
-            try:
-                while True:
-                    line = process.stdout.readline()
-                    if not line and process.poll() is not None:
-                        break
-                        
-                    if line:
-                        current_task.log.append(line.strip())
-                        if "Progress:" in line:
-                            try:
-                                progress = int(line.split("Progress:")[1].strip().rstrip('%'))
-                                current_task.progress = progress
-                            except:
-                                pass
-
-                if process.returncode == 0 and os.path.exists(current_task.output_path):
-                    current_task.status = "完成"
-                    current_task.output_file = os.path.relpath(current_task.output_path).replace('\\', '/')
-                    current_task.log.append("任务处理完成")
-                else:
-                    current_task.status = "失败"
-                    current_task.output_file = None
-                    current_task.log.append(f"任务执行失败，返回码: {process.returncode}")
-                    
-            except Exception as e:
-                current_task.status = "失败"
-                current_task.output_file = None
-                current_task.log.append(f"任务执行异常: {str(e)}")
                 
-            finally:
+                # 调用 monitor_process 监控输出
+                monitor_process(process, current_task, current_task.output_path)
+                
+                # 处理完成后从队列中移除
                 with task_lock:
-                    if current_task.status in ["完成", "失败"]:
+                    if task_queue and task_queue[0] == current_task:
                         task_queue.popleft()
-                    
+                        
         except Exception as e:
-            print(f"任务处理循环出错: {str(e)}")
-            time.sleep(5) 
+            if current_task:
+                current_task.status = "失败"
+                current_task.log.append(f"任务执行出错: {str(e)}")
+            print(f"任务处理出错: {str(e)}")
+            time.sleep(5)
 
 # 添加文件访问路由
 @bp.route('/file/sync/out/<path:filename>')

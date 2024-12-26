@@ -29,38 +29,32 @@ function updateTasks() {
 
 // 渲染任务列表
 function renderTasks() {
-    const taskContainer = $('#taskContainer');
-    taskContainer.empty();
+    const container = $('#taskContainer');
+    container.empty();
     
-    const taskArray = Object.values(globalTasks).sort((a, b) => 
-        new Date(b.create_time) - new Date(a.create_time)
-    );
-    
-    taskArray.forEach(task => {
-        const taskHtml = `
+    Object.values(globalTasks).forEach(task => {
+        const taskElement = $(`
             <div class="task-item">
                 <div class="task-header">
-                    <span class="task-id">#${task.id}</span>
-                    <span class="task-time">${task.create_time}</span>
+                    <span class="task-name">${task.person_name}</span>
                     <span class="task-status ${getStatusClass(task.status)}">${task.status}</span>
                 </div>
-                <div class="task-info">
-                    <div>训练对象：${task.person_name}</div>
-                    <div>音频文件：${task.audio_name}</div>
-                    ${task.progress ? `<div class="progress-bar"><div class="progress" style="width: ${task.progress}%"></div></div>` : ''}
-                </div>
-                ${task.output_file ? `
-                    <div class="task-actions">
-                        <a href="/${task.output_file}" class="download-btn" target="_blank">下载视频</a>
-                        <button onclick="showDownloadModal('${task.output_file}')" class="copy-link-btn">复制链接</button>
+                <div class="task-details">
+                    <div class="log-container" style="max-height: 200px; overflow-y: auto;">
+                        <pre>${task.log.join('\n')}</pre>
                     </div>
-                ` : ''}
-                <div class="log-container">
-                    ${task.log.join('<br>')}
+                    ${task.output_file ? 
+                        `<button onclick="showDownloadModal('${task.output_file}')" class="download-btn">下载生成的视频</button>` 
+                        : ''}
                 </div>
             </div>
-        `;
-        taskContainer.append(taskHtml);
+        `);
+        
+        container.append(taskElement);
+        
+        // 自动滚动到日志底部
+        const logContainer = taskElement.find('.log-container');
+        logContainer.scrollTop(logContainer[0].scrollHeight);
     });
 }
 
