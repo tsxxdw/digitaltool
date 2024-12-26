@@ -250,4 +250,27 @@ function saveTrainPerson(taskId) {
             alert('保存成功！');
         }
     });
+}
+
+function copyDownloadLink(filePath) {
+    // 确保filePath是从file/train开始的路径
+    const normalizedPath = filePath.startsWith('file/train') 
+        ? filePath 
+        : filePath.substring(filePath.indexOf('file/train'));
+        
+    // 直接使用规范化后的路径
+    const fullUrl = `${window.location.origin}/${normalizedPath}`;
+    
+    navigator.clipboard.writeText(fullUrl).then(function() {
+        alert('下载链接已复制到剪贴板');
+    }).catch(function(err) {
+        console.error('复制失败:', err);
+        const tempInput = document.createElement('input');
+        tempInput.value = fullUrl;
+        document.body.appendChild(tempInput);
+        tempInput.select();
+        document.execCommand('copy');
+        document.body.removeChild(tempInput);
+        alert('下载链接已复制到剪贴板');
+    });
 } 

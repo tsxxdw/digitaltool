@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, jsonify
+from flask import Blueprint, render_template, request, jsonify, send_from_directory
 import os
 import json
 import uuid
@@ -20,7 +20,7 @@ ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 
 # 配置文件路径
 SYSTEM_SETTINGS_FILE = os.path.join(ROOT_DIR, 'config/system_setting.json')
-TRAIN_DIR = os.path.join(ROOT_DIR, 'static/train')
+TRAIN_DIR = os.path.join(ROOT_DIR, 'file/train')
 
 # 清空 TRAIN_DIR 目录
 if os.path.exists(TRAIN_DIR):
@@ -399,3 +399,12 @@ def save_person():
         
     except Exception as e:
         return jsonify({'error': str(e)}) 
+
+# 添加文件访问路由
+@bp.route('/file/train/<path:filename>')
+def serve_file(filename):
+    """提供文件下载服务"""
+    try:
+        return send_from_directory('file/train', filename)
+    except Exception as e:
+        return jsonify({'error': f'文件访问失败: {str(e)}'}), 404 
