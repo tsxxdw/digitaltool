@@ -409,4 +409,23 @@ def serve_file(filename):
     try:
         return send_from_directory('file/sync/out', filename)
     except Exception as e:
-        return jsonify({'error': f'文件访问失败: {str(e)}'}), 404 
+        return jsonify({'error': f'文件访问失败: {str(e)}'}), 404
+
+
+def init_delete_file():
+    """初始化动作模块"""
+    # 确保目录存在
+    upload_dir = os.path.join('file', 'sync',"out")
+    os.makedirs(upload_dir, exist_ok=True)
+
+    # 清空上传目录
+    if os.path.exists(upload_dir):
+        for filename in os.listdir(upload_dir):
+            file_path = os.path.join(upload_dir, filename)
+            try:
+                if os.path.isfile(file_path) or os.path.islink(file_path):
+                    os.unlink(file_path)
+                elif os.path.isdir(file_path):
+                    shutil.rmtree(file_path)
+            except Exception as e:
+                print(f"删除文件或目录失败: {file_path} - {str(e)}")

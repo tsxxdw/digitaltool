@@ -11,7 +11,7 @@ app.register_blueprint(sync_logic.bp)
 app.register_blueprint(system_setting_logic.bp)
 
 # 执行初始化
-action_logic.init_action_module()
-
+action_logic.init_delete_file()
+sync_logic.init_delete_file()
 if __name__ == '__main__':
     app.run(debug=True) 

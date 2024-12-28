@@ -486,7 +486,7 @@ def task_status(task_id):
             'output_file': task.output_file
         }) 
 
-def init_action_module():
+def init_delete_file():
     """初始化动作模块"""
     # 确保目录存在
     upload_dir = os.path.join('file', 'action')
