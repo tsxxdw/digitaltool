@@ -23,7 +23,7 @@ function updateTasks() {
     $.get('/sync/tasks', function(tasks) {
         globalTasks = tasks;
         renderTasks();
-        startPolling();
+
     });
 }
 
@@ -34,27 +34,26 @@ function renderTasks() {
     
     Object.values(globalTasks).forEach(task => {
         const taskElement = $(`
-            <div class="task-item">
+            <div class="task-item" data-task-id="${task.id}">
                 <div class="task-header">
-                    <span class="task-name">${task.person_name}</span>
-                    <span class="task-status ${getStatusClass(task.status)}">${task.status}</span>
+                    <span class="task-name">${task.person_name}</span><br>
+                   <div class="info-cell"><strong>状态:</strong> <span class="status-badge ${getStatusClass(task.status)}">${task.status}</span></div>
                 </div>
                 <div class="task-details">
                       <div class="log-container" id="log-${task.id}"></div>
-                    ${task.output_file ? 
-                        `<button onclick="showDownloadModal('${task.output_file}')" class="download-btn">下载生成的视频</button>` 
-                        : ''}
+
                 </div>
             </div>
         `);
         
         container.append(taskElement);
-        pollTaskStatus(task.id, true);
+
     });
 }
 // 轮询任务状态
 function pollTaskStatus(taskId) {
-    $.get(`/sync/task_status/${taskId}`, function(response) {
+    try{
+       $.get(`/sync/task_status/${taskId}`, function(response) {
         if (response.error) return;
 
         // 更新任务状态
@@ -70,22 +69,39 @@ function pollTaskStatus(taskId) {
 
         // 更新日志 - 使用最新的完整日志
         const logContainer = $(`#log-${taskId}`);
+        const taskItem = logContainer.closest('.task-item');
         if (response.logs && response.logs.length > 0) {
             logContainer.html(response.logs.join('<br>'));
             // 自动滚动到底部
             logContainer.scrollTop(logContainer[0].scrollHeight);
         }
+// 如果任务完成且有输出文件，添加下载按钮
+                if (response.status === "已完成" && response.output_file) {
+                    // 添加下载按钮
+                    const downloadHtml = `
+                         <div class="log-container" id="log-${taskId}"></div>
+                    ${response.output_file ?
+                        `<button onclick="copyDownloadLink('${response.output_file}')" class="download-btn">下载生成的视频</button>`
+                        : ''}`;
 
+                    taskItem.append(downloadHtml);
+                }
         // 如果任务还在进行中，继续轮询
-        if (response.status === "生成中" || response.status === "等待中") {
-            setTimeout(() => pollTaskStatus(taskId), 10000);  // 10秒轮询一次
-        }
-    });
+
+    })
+    }catch(e){
+        console.log("e:暂无id");
+    }
 }
 
 // 表单提交处理
 $(document).ready(function() {
-    updateTasks();
+    setTimeout(function() {
+        updateTasks();
+    }, 3000);
+    startPolling();// 开始循环日志
+
+
     $('#syncForm').on('submit', function(e) {
         e.preventDefault();
         
@@ -114,28 +130,19 @@ $(document).ready(function() {
 
 // 开始轮询
 function startPolling() {
-    // 清除现有的轮询
-    if (pollingTimer) {
-        clearInterval(pollingTimer);
-    }
-    
     // 设置新的轮询
    pollingTimer = setInterval(() => {
         Object.entries(globalTasks).forEach(([taskId, task]) => {
-            if (task.status !== "已完成") {
-                pollTaskStatus(taskId, false);
+            const logContainer = $(`#log-${taskId}`);
+            if (logContainer.text().length < 100) {
+                pollTaskStatus(taskId);
+            }else if (task.status !== "已完成") {
+                pollTaskStatus(taskId);
             }
         });
     }, POLLING_INTERVAL);
 }
 
-// 停止轮询
-function stopPolling() {
-    if (pollingTimer) {
-        clearInterval(pollingTimer);
-        pollingTimer = null;
-    }
-}
 
 // 显示下载链接模态框
 function showDownloadModal(filePath) {
@@ -155,4 +162,28 @@ function showDownloadModal(filePath) {
         document.body.removeChild(tempInput);
         alert('下载链接已复制到剪贴板');
     });
-} 
+}
+
+// 修改复制链接功能
+function copyDownloadLink(filePath) {
+    // 确保filePath是从file/action开始的路径
+    const normalizedPath = filePath.startsWith('file/action')
+        ? filePath
+        : filePath.substring(filePath.indexOf('file/action'));
+
+    // 直接使用规范化后的路径
+    const fullUrl = `${window.location.origin}/${normalizedPath}`;
+
+    navigator.clipboard.writeText(fullUrl).then(function() {
+        alert('下载链接已复制到剪贴板');
+    }).catch(function(err) {
+        console.error('复制失败:', err);
+        const tempInput = document.createElement('input');
+        tempInput.value = fullUrl;
+        document.body.appendChild(tempInput);
+        tempInput.select();
+        document.execCommand('copy');
+        document.body.removeChild(tempInput);
+        alert('下载链接已复制到剪贴板');
+    });
+}
