@@ -40,9 +40,7 @@ function renderTasks() {
                     <span class="task-status ${getStatusClass(task.status)}">${task.status}</span>
                 </div>
                 <div class="task-details">
-                    <div class="log-container" style="max-height: 200px; overflow-y: auto;">
-                        <pre>${task.log.join('\n')}</pre>
-                    </div>
+                      <div class="log-container" id="log-${task.id}"></div>
                     ${task.output_file ? 
                         `<button onclick="showDownloadModal('${task.output_file}')" class="download-btn">下载生成的视频</button>` 
                         : ''}
@@ -51,15 +49,43 @@ function renderTasks() {
         `);
         
         container.append(taskElement);
-        
-        // 自动滚动到日志底部
-        const logContainer = taskElement.find('.log-container');
-        logContainer.scrollTop(logContainer[0].scrollHeight);
+        pollTaskStatus(task.id, true);
+    });
+}
+// 轮询任务状态
+function pollTaskStatus(taskId) {
+    $.get(`/sync/task_status/${taskId}`, function(response) {
+        if (response.error) return;
+
+        // 更新任务状态
+        if (globalTasks[taskId].status !== response.status) {
+            globalTasks[taskId].status = response.status;
+
+            // 更新状态显示
+            const statusElement = $(`.task-item[data-task-id="${taskId}"] .status-badge`);
+            statusElement.text(response.status);
+            statusElement.attr('class', `status-badge ${getStatusClass(response.status)}`);
+
+        }
+
+        // 更新日志 - 使用最新的完整日志
+        const logContainer = $(`#log-${taskId}`);
+        if (response.logs && response.logs.length > 0) {
+            logContainer.html(response.logs.join('<br>'));
+            // 自动滚动到底部
+            logContainer.scrollTop(logContainer[0].scrollHeight);
+        }
+
+        // 如果任务还在进行中，继续轮询
+        if (response.status === "生成中" || response.status === "等待中") {
+            setTimeout(() => pollTaskStatus(taskId), 10000);  // 10秒轮询一次
+        }
     });
 }
 
 // 表单提交处理
 $(document).ready(function() {
+    updateTasks();
     $('#syncForm').on('submit', function(e) {
         e.preventDefault();
         
@@ -84,9 +110,6 @@ $(document).ready(function() {
             }
         });
     });
-    
-    // 初始加载任务列表
-    updateTasks();
 });
 
 // 开始轮询
@@ -97,10 +120,11 @@ function startPolling() {
     }
     
     // 设置新的轮询
-    pollingTimer = setInterval(() => {
-        $.get('/sync/tasks', function(tasks) {
-            globalTasks = tasks;
-            renderTasks();
+   pollingTimer = setInterval(() => {
+        Object.entries(globalTasks).forEach(([taskId, task]) => {
+            if (task.status !== "已完成") {
+                pollTaskStatus(taskId, false);
+            }
         });
     }, POLLING_INTERVAL);
 }

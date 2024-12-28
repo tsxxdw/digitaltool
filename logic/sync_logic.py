@@ -308,13 +308,17 @@ def get_task_status(task_id):
     """获取单个任务状态"""
     if task_id not in sync_tasks:
         return jsonify({'error': '任务不存在'})
-        
+
     task = sync_tasks[task_id]
+    logs = []
+    if os.path.exists(task.log_file):
+        with open(task.log_file, 'r', encoding='utf-8') as f:
+            logs = f.readlines()
     return jsonify({
         'status': task.status,
         'progress': task.progress,
         'output_file': task.output_file,
-        'log': task.log
+        'logs': logs
     }) 
 
 def generate_random_string(length):
