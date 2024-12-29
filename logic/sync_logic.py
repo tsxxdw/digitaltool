@@ -27,20 +27,17 @@ is_processing = False
 ROOT_DIR = os.path.dirname(os.path.dirname(__file__))
 CONFIG_FILE = os.path.join(ROOT_DIR, 'config', 'system_setting.json')
 
+
 class SyncTask:
     def __init__(self, task_id, trained_video_id, audio_name, person_name):
         self.task_id = task_id
         self.trained_video_id = trained_video_id
         self.audio_name = audio_name
         self.person_name = person_name
-        self.status = "等待中"
+        self.status = "等待中"  # 只有三种状态：等待中、生成中、已失败
         self.create_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         self.output_file = None
         self.log = []
-        self.progress = 0
-        # 新增属性
-        self.process = None
-        self.cmd = None
         self.yaml_path = None
         self.output_path = None
         
@@ -296,7 +293,6 @@ def get_tasks():
             'person_name': task.person_name,
             'audio_name': task.audio_name,
             'status': task.status,
-            'progress': task.progress,
             'create_time': task.create_time,
             'output_file': task.output_file,
             'log': task.log
@@ -316,10 +312,9 @@ def get_task_status(task_id):
             logs = f.readlines()
     return jsonify({
         'status': task.status,
-        'progress': task.progress,
         'output_file': task.output_file,
         'logs': logs
-    }) 
+    })
 
 def generate_random_string(length):
     """生成指定长度的随机字符串"""
@@ -335,76 +330,106 @@ def generate_task_id():
     return f"{timestamp}_{random_str}" 
 
 def start_task_processing():
-    """启动任务处理"""
-    global is_processing
-    with task_lock:
-        if not is_processing and task_queue:
-            # 检查是否有正在处理中的任务
-            processing_tasks = [t for t in task_queue if t.status == "生成中"]
-            if not processing_tasks:
-                is_processing = True
-                thread = threading.Thread(target=process_task_queue)
-                thread.daemon = True
-                thread.start() 
+    """启动定时任务处理"""
+    def run_timer():
+        while True:
+            process_task_queue()
+            time.sleep(5)  # 每5秒检查一次
+            
+    timer_thread = threading.Thread(target=run_timer)
+    timer_thread.daemon = True
+    timer_thread.start()
 
 def process_task_queue():
     """处理任务队列"""
-    global current_task, is_processing
-    while True:
-        try:
+    current_task = None
+    try:
+        with task_lock:
+            # 检查队列是否为空
+            if not task_queue:
+                return
+            
+            # 获取当前任务
+            current_task = task_queue[0]
+            
+            # 如果当前任务正在生成中，检查是否已完成
+            if current_task.status == "生成中":
+                if os.path.exists(current_task.output_path):
+                    current_task.status = "已完成"
+                    current_task.output_file = os.path.relpath(current_task.output_path).replace('\\', '/')
+                    task_queue.popleft()
+                return
+            
+            # 开始处理新任务
+            current_task.status = "生成中"
+            current_task.log.append("开始处理任务...")
+        
+        # 以下操作不需要加锁
+        # 读取配置文件
+        with open(CONFIG_FILE, 'r') as f:
+            config = json.load(f)
+            
+        # 获取MUSETALK路径
+        MUSETALK = config.get('windows_musetalk_path' if platform.system() == 'Windows' else 'linux_musetalk_path', '')
+        if not MUSETALK:
+            raise Exception("MUSETALK路径未配置")
+
+        # 构建命令
+        if platform.system() == 'Windows':
+            cmd = f'cmd /c "cd /d {MUSETALK} && conda activate musetalk && python -m tsxxdw.realtime_inference --inference_config {current_task.yaml_path} --save_path {current_task.output_path}"'
+        else:
+            cmd = f'cd {MUSETALK} && source /root/miniconda3/etc/profile.d/conda.sh && conda activate musetalk && python -m tsxxdw.realtime_inference --inference_config {current_task.yaml_path} --save_path {current_task.output_path}"'
+
+        # 启动进程
+        process = subprocess.Popen(
+            cmd,
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            encoding='utf-8',
+            errors='replace'
+        )
+        
+        # 写入日志
+        os.makedirs(os.path.dirname(current_task.log_file), exist_ok=True)
+        with open(current_task.log_file, 'w', encoding='utf-8') as log_file:
+            start_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            log_file.write(f"[{start_time}] 开始处理任务\n")
+            log_file.write(f"[{start_time}] 使用配置文件: {current_task.yaml_path}\n")
+            log_file.flush()
+            
+            while process.poll() is None:
+                if os.path.exists(current_task.output_path):
+                    end_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                    log_file.write(f"[{end_time}] 生成完成，输出文件已生成\n")
+                    with task_lock:
+                        current_task.status = "已完成"
+                        current_task.output_file = os.path.relpath(current_task.output_path).replace('\\', '/')
+                        task_queue.popleft()
+                    break
+                
+                # 读取并记录日志
+                line = process.stdout.readline()
+                if line:
+                    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                    log_message = f"[{timestamp}] {line.strip()}"
+                    current_task.log.append(log_message)
+                    log_file.write(log_message + '\n')
+                    log_file.flush()
+                
+                time.sleep(1)
+
+    except Exception as e:
+        if current_task:
             with task_lock:
-                if not task_queue:
-                    is_processing = False
-                    break
-                
-                current_task = task_queue[0]
-                if current_task.status != "等待中":
-                    if current_task.status == "完成" or current_task.status == "失败":
-                        task_queue.popleft()
-                        continue
-                    break
-                
-                current_task.status = "生成中"
-                current_task.log.append("开始处理任务...")
-                
-                # 读取配置文件
-                with open(CONFIG_FILE, 'r') as f:
-                    config = json.load(f)
-                    
-                # 获取MUSETALK路径
-                MUSETALK = config.get('windows_musetalk_path' if platform.system() == 'Windows' else 'linux_musetalk_path', '')
-                if not MUSETALK:
-                    raise Exception("MUSETALK路径未配置")
-
-                # 根据操作系统构建命令
-                if platform.system() == 'Windows':
-                    cmd = f'cmd /c "cd /d {MUSETALK} && conda activate musetalk && python -m tsxxdw.realtime_inference --inference_config {current_task.yaml_path} --save_path {current_task.output_path}"'
-                else:
-                    cmd = f'cd {MUSETALK} && source /root/miniconda3/etc/profile.d/conda.sh && conda activate musetalk && python -m tsxxdw.realtime_inference --inference_config {current_task.yaml_path} --save_path {current_task.output_path}"'
-
-                process = subprocess.Popen(
-                    cmd,
-                    shell=True,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.STDOUT,
-                    encoding='utf-8',
-                    errors='replace'
-                )
-                
-                # 调用 monitor_process 监控输出
-                monitor_process(process, current_task, current_task.output_path)
-                
-                # 处理完成后从队列中移除
-                with task_lock:
-                    if task_queue and task_queue[0] == current_task:
-                        task_queue.popleft()
-                        
-        except Exception as e:
-            if current_task:
-                current_task.status = "失败"
+                current_task.status = "生成失败"
                 current_task.log.append(f"任务执行出错: {str(e)}")
-            print(f"任务处理出错: {str(e)}")
-            time.sleep(5)
+            try:
+                with open(current_task.log_file, 'a', encoding='utf-8') as log_file:
+                    error_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                    log_file.write(f"[{error_time}] 发生错误: {str(e)}\n")
+            except:
+                pass
 
 # 添加文件访问路由
 @bp.route('/file/sync/out/<path:filename>')

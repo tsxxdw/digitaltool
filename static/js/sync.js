@@ -9,9 +9,7 @@ function getStatusClass(status) {
             return 'status-waiting';
         case '生成中':
             return 'status-generating';
-        case '已完成':
-            return 'status-complete';
-        case '生成失败':
+        case '已失败':
             return 'status-failed';
         default:
             return '';
