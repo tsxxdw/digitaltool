@@ -226,19 +226,26 @@ function copyDownloadLink(filePath) {
         ? filePath 
         : filePath.substring(filePath.indexOf('file/action'));
         
-    // 直接使用规范化后的路径
+    // 构建完整URL
     const fullUrl = `${window.location.origin}/${normalizedPath}`;
     
-    navigator.clipboard.writeText(fullUrl).then(function() {
-        alert('下载链接已复制到剪贴板');
-    }).catch(function(err) {
-        console.error('复制失败:', err);
-        const tempInput = document.createElement('input');
-        tempInput.value = fullUrl;
-        document.body.appendChild(tempInput);
+    // 创建临时输入框
+    const tempInput = document.createElement('input');
+    tempInput.style.position = 'fixed';
+    tempInput.style.opacity = '0';
+    tempInput.value = fullUrl;
+    document.body.appendChild(tempInput);
+    
+    try {
+        // 选择并复制文本
         tempInput.select();
         document.execCommand('copy');
-        document.body.removeChild(tempInput);
         alert('下载链接已复制到剪贴板');
-    });
+    } catch (err) {
+        console.error('复制失败:', err);
+        alert('复制失败，请手动复制链接');
+    } finally {
+        // 移除临时输入框
+        document.body.removeChild(tempInput);
+    }
 } 
