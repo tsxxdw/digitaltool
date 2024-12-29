@@ -245,6 +245,11 @@ def process_task_queue():
             
             current_task.status = "处理中"
             current_task.add_log("开始处理任务...")
+            
+            # 修改这里：在Linux环境下使用bash -c
+            if platform.system() != 'Windows':
+                current_task.cmd = f"bash -c '{current_task.cmd}'"
+                
             current_task.start_process()
 
         try:
@@ -254,14 +259,12 @@ def process_task_queue():
                 
                 if process.returncode == 0 and os.path.exists(current_task.output_file):
                     current_task.status = "完成"
-                    # 获取相对路径
                     relative_path = os.path.relpath(current_task.output_file, 'static')
                     
-                    # 不管是什么操作系统，都转换为网络路径格式（使用正斜杠）
                     if platform.system() == 'Windows':
                         url_path = relative_path.replace('\\', '/')
                     else:
-                        url_path = relative_path  # Linux 下已经是正斜杠，无需转换
+                        url_path = relative_path
                         
                     current_task.output_file = url_path
                     current_task.add_log("任务处理完成")

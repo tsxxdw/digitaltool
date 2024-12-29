@@ -159,7 +159,8 @@ def get_command(yaml_path, save_path):
         return f'cmd /c "cd /d {MUSETALK} && conda activate musetalk && python -m tsxxdw.realtime_inference --inference_config {yaml_path} --save_path {save_path}"'
     else:
         # Linux/macOS 环境下，先进入目录，然后激活环境并执行命令
-        return f'cd {MUSETALK} && source /root/miniconda3/etc/profile.d/conda.sh && conda activate musetalk && python -m tsxxdw.realtime_inference --inference_config {yaml_path} --save_path {save_path}'
+        cmd = f'cd {MUSETALK} && source /root/miniconda3/etc/profile.d/conda.sh && conda activate musetalk && python -m tsxxdw.realtime_inference --inference_config {yaml_path} --save_path {save_path}'
+        return f"bash -c '{cmd}'"  # 在Linux环境下包装命令
 
 def process_task_queue():
     """处理任务队列"""

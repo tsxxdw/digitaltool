@@ -379,6 +379,7 @@ def process_task_queue():
             cmd = f'cmd /c "cd /d {MUSETALK} && conda activate musetalk && python -m tsxxdw.realtime_inference --inference_config {current_task.yaml_path} --save_path {current_task.output_path}"'
         else:
             cmd = f'cd {MUSETALK} && source /root/miniconda3/etc/profile.d/conda.sh && conda activate musetalk && python -m tsxxdw.realtime_inference --inference_config {current_task.yaml_path} --save_path {current_task.output_path}"'
+            cmd = f"bash -c '{cmd}'"  # 在Linux环境下包装命令
 
         # 启动进程
         process = subprocess.Popen(
