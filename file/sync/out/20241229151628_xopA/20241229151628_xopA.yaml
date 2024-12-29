@@ -1,6 +1,0 @@
-20241226200103_wbvh:
-  preparation: False
-  bbox_shift: 5
-  video_path: C:\computer\3\itproject\digitaltool\file\train\20241226200103_wbvh\20241226200103_wbvh.mp4
-  audio_clips:
-    audio_0: C:\computer\3\itproject\digitaltool\file\sync\out\20241229151628_xopA\20241229151628_xopA.wav

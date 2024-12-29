@@ -356,7 +356,7 @@ def process_task_queue():
             if current_task.status == "生成中":
                 if os.path.exists(current_task.output_path):
                     current_task.status = "已完成"
-                    current_task.output_file = os.path.relpath(current_task.output_path).replace('\\', '/')
+                    current_task.output_file = os.path.relpath(current_task.output_path).replace(os.sep, '/')
                     task_queue.popleft()
                 return
             
@@ -391,7 +391,13 @@ def process_task_queue():
         )
         
         # 写入日志
-        os.makedirs(os.path.dirname(current_task.log_file), exist_ok=True)
+        log_dir = os.path.dirname(current_task.log_file)
+        os.makedirs(log_dir, exist_ok=True)
+        
+        # 在Linux下设置目录权限
+        if platform.system() != 'Windows':
+            os.chmod(log_dir, 0o755)
+            
         with open(current_task.log_file, 'w', encoding='utf-8') as log_file:
             start_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             log_file.write(f"[{start_time}] 开始处理任务\n")
@@ -404,7 +410,7 @@ def process_task_queue():
                     log_file.write(f"[{end_time}] 生成完成，输出文件已生成\n")
                     with task_lock:
                         current_task.status = "已完成"
-                        current_task.output_file = os.path.relpath(current_task.output_path).replace('\\', '/')
+                        current_task.output_file = os.path.relpath(current_task.output_path).replace(os.sep, '/')
                         task_queue.popleft()
                     break
                 
