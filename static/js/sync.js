@@ -96,9 +96,8 @@ function pollTaskStatus(taskId) {
 
 // 表单提交处理
 $(document).ready(function() {
-    setTimeout(function() {
-        updateTasks();
-    }, 3000);
+    updateTasks();
+
     startPolling();// 开始循环日志
 
 
