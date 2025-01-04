@@ -327,20 +327,16 @@ def process_task_queue():
         if platform.system() != 'Windows':
             os.chmod(log_dir, 0o755)
 
-        # 使用缓冲区来存储日志
+        # 使用更大的缓冲区和更长的写入间隔
         log_buffer = []
+        buffer_size_limit = 50  # 日志条数限制
         
         def write_logs():
             if log_buffer:
                 with open(current_task.log_file, 'a', encoding='utf-8') as log_file:
                     log_file.write(''.join(log_buffer))
+                current_task.log.extend(log_buffer)  # 更新内存中的日志
                 log_buffer.clear()
-
-        with open(current_task.log_file, 'w', encoding='utf-8') as log_file:
-            start_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            log_file.write(f"[{start_time}] 执行命令：{cmd} \n")
-            log_file.write(f"[{start_time}] 开始处理任务\n")
-            log_file.write(f"[{start_time}] 使用配置文件: {current_task.yaml_path}\n")
 
         process = subprocess.Popen(
             cmd,
@@ -349,7 +345,7 @@ def process_task_queue():
             stderr=subprocess.STDOUT,
             encoding='utf-8',
             errors='replace',
-            bufsize=1
+            bufsize=4096  # 增加缓冲区大小
         )
 
         last_write_time = time.time()
@@ -359,16 +355,17 @@ def process_task_queue():
             if line:
                 timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                 log_message = f"[{timestamp}] {line.strip()}\n"
-                current_task.log.append(log_message)
                 log_buffer.append(log_message)
                 
-                # 每隔0.5秒写入一次日志
+                # 满足以下任一条件时写入日志：
+                # 1. 距离上次写入超过3秒
+                # 2. 缓冲区达到50条日志
                 current_time = time.time()
-                if current_time - last_write_time >= 0.5:
+                if (current_time - last_write_time >= 5.0) or (len(log_buffer) >= buffer_size_limit):
                     write_logs()
                     last_write_time = current_time
             
-            time.sleep(0.1)  # 减少等待时间
+            time.sleep(0.2)  # 增加轮询间隔
 
         # 确保所有剩余日志都被写入
         write_logs()
