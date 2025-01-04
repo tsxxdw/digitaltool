@@ -1,0 +1,341 @@
+[2025-01-04 18:18:33] 开始处理任务
+[2025-01-04 18:18:33] 使用配置文件: C:\computer\3\itproject\digitaltool\file\sync\out\20250104181833_swxy\20250104181833_swxy.yaml
+add ffmpeg to path
+Loads checkpoint by local backend from path: ./models/dwpose/dw-ll_ucoco_384.pth
+cuda start
+C:\ProgramData\miniconda3\envs\musetalk\lib\site-packages\torch\utils\_contextlib.py:125: UserWarning: Decorating classes is deprecated and will be disabled in future versions. You should only decorate functions or methods. To preserve the current behavior of class decoration, you can directly decorate the `__init__` method and nothing else.
+  warnings.warn("Decorating classes is deprecated and will be disabled in "
+{'20250104120036_fixp': {'preparation': False, 'bbox_shift': 5, 'video_path': 'C:\\computer\\3\\itproject\\digitaltool\\file\\train\\20250104120036_fixp\\20250104120036_fixp.mp4', 'audio_clips': {'audio_0': 'C:\\computer\\3\\itproject\\digitaltool\\file\\sync\\out\\20250104181833_swxy\\20250104181833_swxy.wav'}}}
+TensorFlow GPU is available.
+PyTorch GPU is available.
+Num GPUs Available:  1
+avatar_path---------------------: C:\computer\3\itproject\manyaitools_modules\MuseTalk\results\20250104120036_fixp
+reading images...
+  0%|          | 0/600 [00:00<?, ?it/s]  2%|▏         | 9/600 [00:00<00:06, 87.71it/s]  3%|▎         | 18/600 [00:00<00:06, 87.64it/s]  4%|▍         | 27/600 [00:00<00:06, 84.16it/s]  6%|▌         | 37/600 [00:00<00:06, 86.67it/s]  8%|▊         | 46/600 [00:00<00:06, 87.62it/s]  9%|▉         | 55/600 [00:00<00:06, 85.05it/s] 11%|█         | 64/600 [00:00<00:06, 83.60it/s] 12%|█▏        | 73/600 [00:00<00:06, 83.52it/s] 14%|█▎        | 82/600 [00:00<00:06, 83.94it/s] 15%|█▌        | 91/600 [00:01<00:06, 83.99it/s] 17%|█▋        | 100/600 [00:01<00:05, 83.63it/s] 18%|█▊        | 109/600 [00:01<00:06, 81.54it/s] 20%|█▉        | 118/600 [00:01<00:05, 82.32it/s] 21%|██        | 127/600 [00:01<00:05, 83.73it/s] 23%|██▎       | 136/600 [00:01<00:05, 85.04it/s] 24%|██▍       | 145/600 [00:01<00:05, 85.10it/s] 26%|██▌       | 154/600 [00:01<00:05, 85.89it/s] 27%|██▋       | 163/600 [00:01<00:05, 86.37it/s] 29%|██▉       | 173/600 [00:02<00:04, 87.54it/s] 30%|███       | 182/600 [00:02<00:04, 87.62it/s] 32%|███▏      | 191/600 [00:02<00:04, 86.77it/s] 33%|███▎      | 200/600 [00:02<00:04, 86.08it/s] 35%|███▍      | 209/600 [00:02<00:04, 85.63it/s] 36%|███▋      | 218/600 [00:02<00:04, 82.02it/s] 38%|███▊      | 227/600 [00:02<00:04, 80.21it/s] 39%|███▉      | 236/600 [00:02<00:04, 79.09it/s] 41%|████      | 245/600 [00:02<00:04, 79.89it/s] 42%|████▏     | 254/600 [00:03<00:04, 81.00it/s] 44%|████▍     | 263/600 [00:03<00:04, 81.91it/s] 45%|████▌     | 272/600 [00:03<00:04, 81.07it/s] 47%|████▋     | 281/600 [00:03<00:03, 80.55it/s] 48%|████▊     | 290/600 [00:03<00:03, 81.37it/s] 50%|████▉     | 299/600 [00:03<00:03, 83.62it/s] 51%|█████▏    | 308/600 [00:03<00:03, 84.24it/s] 53%|█████▎    | 317/600 [00:03<00:03, 82.92it/s] 54%|█████▍    | 326/600 [00:03<00:03, 83.27it/s] 56%|█████▌    | 335/600 [00:04<00:03, 82.83it/s] 57%|█████▋    | 344/600 [00:04<00:03, 83.21it/s] 59%|█████▉    | 353/600 [00:04<00:03, 80.86it/s] 60%|██████    | 362/600 [00:04<00:03, 78.46it/s] 62%|██████▏   | 370/600 [00:04<00:03, 76.17it/s] 63%|██████▎   | 379/600 [00:04<00:02, 77.88it/s] 65%|██████▍   | 388/600 [00:04<00:02, 80.34it/s] 66%|██████▌   | 397/600 [00:04<00:02, 81.44it/s] 68%|██████▊   | 406/600 [00:04<00:02, 80.89it/s] 69%|██████▉   | 415/600 [00:05<00:02, 81.83it/s] 71%|███████   | 424/600 [00:05<00:02, 82.74it/s] 72%|███████▏  | 433/600 [00:05<00:01, 83.95it/s] 74%|███████▎  | 442/600 [00:05<00:01, 83.04it/s] 75%|███████▌  | 451/600 [00:05<00:01, 84.38it/s] 77%|███████▋  | 460/600 [00:05<00:01, 85.31it/s] 78%|███████▊  | 469/600 [00:05<00:01, 85.92it/s] 80%|███████▉  | 478/600 [00:05<00:01, 86.11it/s] 81%|████████  | 487/600 [00:05<00:01, 85.61it/s] 83%|████████▎ | 496/600 [00:05<00:01, 85.65it/s] 84%|████████▍ | 505/600 [00:06<00:01, 85.62it/s] 86%|████████▌ | 514/600 [00:06<00:01, 84.92it/s] 87%|████████▋ | 523/600 [00:06<00:00, 83.83it/s] 89%|████████▊ | 532/600 [00:06<00:00, 84.92it/s] 90%|█████████ | 541/600 [00:06<00:00, 85.63it/s] 92%|█████████▏| 550/600 [00:06<00:00, 86.40it/s] 93%|█████████▎| 559/600 [00:06<00:00, 86.05it/s] 95%|█████████▍| 568/600 [00:06<00:00, 85.38it/s] 96%|█████████▌| 577/600 [00:06<00:00, 85.11it/s] 98%|█████████▊| 586/600 [00:07<00:00, 86.02it/s] 99%|█████████▉| 595/600 [00:07<00:00, 86.68it/s]100%|██████████| 600/600 [00:07<00:00, 83.76it/s]
+reading images...
+  0%|          | 0/600 [00:00<?, ?it/s] 15%|█▌        | 91/600 [00:00<00:00, 904.14it/s] 31%|███       | 187/600 [00:00<00:00, 931.53it/s] 47%|████▋     | 281/600 [00:00<00:00, 910.52it/s] 62%|██████▏   | 373/600 [00:00<00:00, 898.43it/s] 78%|███████▊  | 465/600 [00:00<00:00, 902.85it/s] 94%|█████████▍| 567/600 [00:00<00:00, 941.97it/s]100%|██████████| 600/600 [00:00<00:00, 925.68it/s]
+Inferring using: C:\computer\3\itproject\digitaltool\file\sync\out\20250104181833_swxy\20250104181833_swxy.wav
+start inference
+start fps: 30
+video in 30 FPS, audio idx in 50FPS
+processing audio:C:\computer\3\itproject\digitaltool\file\sync\out\20250104181833_swxy\20250104181833_swxy.wav costs 515.498161315918ms
+155
+  0%|          | 0/39 [00:00<?, ?it/s]  3%|▎         | 1/39 [00:01<00:58,  1.54s/it]mask_array.shape: (480, 480, 3)
+mask_array.dtype: uint8
+mask_array.shape: (480, 480, 3)
+mask_array.dtype: uint8
+mask_array.shape: (484, 484, 3)
+mask_array.dtype: uint8
+mask_array.shape: (484, 484, 3)
+mask_array.dtype: uint8
+  5%|▌         | 2/39 [00:01<00:27,  1.36it/s]mask_array.shape: (488, 488, 3)
+mask_array.dtype: uint8
+mask_array.shape: (492, 492, 3)
+mask_array.dtype: uint8
+mask_array.shape: (486, 486, 3)
+mask_array.dtype: uint8
+mask_array.shape: (482, 482, 3)
+mask_array.dtype: uint8
+  8%|▊         | 3/39 [00:01<00:16,  2.13it/s]mask_array.shape: (486, 486, 3)
+mask_array.dtype: uint8
+mask_array.shape: (486, 486, 3)
+mask_array.dtype: uint8
+mask_array.shape: (486, 486, 3)
+mask_array.dtype: uint8
+mask_array.shape: (494, 494, 3)
+mask_array.dtype: uint8
+ 10%|█         | 4/39 [00:02<00:12,  2.89it/s]mask_array.shape: (504, 504, 3)
+mask_array.dtype: uint8
+mask_array.shape: (498, 498, 3)
+mask_array.dtype: uint8
+mask_array.shape: (488, 488, 3)
+mask_array.dtype: uint8
+mask_array.shape: (488, 488, 3)
+mask_array.dtype: uint8
+ 13%|█▎        | 5/39 [00:02<00:09,  3.60it/s]mask_array.shape: (484, 484, 3)
+mask_array.dtype: uint8
+mask_array.shape: (484, 484, 3)
+mask_array.dtype: uint8
+mask_array.shape: (482, 482, 3)
+mask_array.dtype: uint8
+mask_array.shape: (476, 476, 3)
+mask_array.dtype: uint8
+ 15%|█▌        | 6/39 [00:02<00:07,  4.22it/s]mask_array.shape: (472, 472, 3)
+mask_array.dtype: uint8
+mask_array.shape: (472, 472, 3)
+mask_array.dtype: uint8
+mask_array.shape: (472, 472, 3)
+mask_array.dtype: uint8
+mask_array.shape: (460, 460, 3)
+mask_array.dtype: uint8
+ 18%|█▊        | 7/39 [00:02<00:06,  4.75it/s]mask_array.shape: (460, 460, 3)
+mask_array.dtype: uint8
+mask_array.shape: (450, 450, 3)
+mask_array.dtype: uint8
+mask_array.shape: (448, 448, 3)
+mask_array.dtype: uint8
+mask_array.shape: (448, 448, 3)
+mask_array.dtype: uint8
+ 21%|██        | 8/39 [00:02<00:06,  5.14it/s]mask_array.shape: (448, 448, 3)
+mask_array.dtype: uint8
+mask_array.shape: (438, 438, 3)
+mask_array.dtype: uint8
+mask_array.shape: (438, 438, 3)
+mask_array.dtype: uint8
+mask_array.shape: (434, 434, 3)
+mask_array.dtype: uint8
+ 23%|██▎       | 9/39 [00:02<00:05,  5.46it/s]mask_array.shape: (438, 438, 3)
+mask_array.dtype: uint8
+mask_array.shape: (438, 438, 3)
+mask_array.dtype: uint8
+mask_array.shape: (438, 438, 3)
+mask_array.dtype: uint8
+mask_array.shape: (444, 444, 3)
+mask_array.dtype: uint8
+ 26%|██▌       | 10/39 [00:02<00:05,  5.71it/s]mask_array.shape: (448, 448, 3)
+mask_array.dtype: uint8
+mask_array.shape: (448, 448, 3)
+mask_array.dtype: uint8
+mask_array.shape: (452, 452, 3)
+mask_array.dtype: uint8
+mask_array.shape: (452, 452, 3)
+mask_array.dtype: uint8
+ 28%|██▊       | 11/39 [00:03<00:04,  5.89it/s]mask_array.shape: (458, 458, 3)
+mask_array.dtype: uint8
+mask_array.shape: (462, 462, 3)
+mask_array.dtype: uint8
+mask_array.shape: (462, 462, 3)
+mask_array.dtype: uint8
+mask_array.shape: (468, 468, 3)
+mask_array.dtype: uint8
+ 31%|███       | 12/39 [00:03<00:04,  6.04it/s]mask_array.shape: (472, 472, 3)
+mask_array.dtype: uint8
+mask_array.shape: (472, 472, 3)
+mask_array.dtype: uint8
+mask_array.shape: (484, 484, 3)
+mask_array.dtype: uint8
+mask_array.shape: (488, 488, 3)
+mask_array.dtype: uint8
+ 33%|███▎      | 13/39 [00:03<00:04,  6.11it/s]mask_array.shape: (488, 488, 3)
+mask_array.dtype: uint8
+mask_array.shape: (494, 494, 3)
+mask_array.dtype: uint8
+mask_array.shape: (492, 492, 3)
+mask_array.dtype: uint8
+mask_array.shape: (492, 492, 3)
+mask_array.dtype: uint8
+ 36%|███▌      | 14/39 [00:03<00:04,  6.18it/s]mask_array.shape: (504, 504, 3)
+mask_array.dtype: uint8
+mask_array.shape: (498, 498, 3)
+mask_array.dtype: uint8
+mask_array.shape: (498, 498, 3)
+mask_array.dtype: uint8
+mask_array.shape: (494, 494, 3)
+mask_array.dtype: uint8
+ 38%|███▊      | 15/39 [00:03<00:03,  6.22it/s]mask_array.shape: (488, 488, 3)
+mask_array.dtype: uint8
+mask_array.shape: (488, 488, 3)
+mask_array.dtype: uint8
+mask_array.shape: (488, 488, 3)
+mask_array.dtype: uint8
+mask_array.shape: (476, 476, 3)
+mask_array.dtype: uint8
+ 41%|████      | 16/39 [00:03<00:03,  6.25it/s]mask_array.shape: (472, 472, 3)
+mask_array.dtype: uint8
+mask_array.shape: (476, 476, 3)
+mask_array.dtype: uint8
+mask_array.shape: (472, 472, 3)
+mask_array.dtype: uint8
+mask_array.shape: (472, 472, 3)
+mask_array.dtype: uint8
+ 44%|████▎     | 17/39 [00:04<00:03,  6.29it/s]mask_array.shape: (472, 472, 3)
+mask_array.dtype: uint8
+mask_array.shape: (468, 468, 3)
+mask_array.dtype: uint8
+mask_array.shape: (472, 472, 3)
+mask_array.dtype: uint8
+mask_array.shape: (468, 468, 3)
+mask_array.dtype: uint8
+ 46%|████▌     | 18/39 [00:04<00:03,  6.31it/s]mask_array.shape: (468, 468, 3)
+mask_array.dtype: uint8
+mask_array.shape: (468, 468, 3)
+mask_array.dtype: uint8
+mask_array.shape: (458, 458, 3)
+mask_array.dtype: uint8
+mask_array.shape: (458, 458, 3)
+mask_array.dtype: uint8
+ 49%|████▊     | 19/39 [00:04<00:03,  6.28it/s]mask_array.shape: (458, 458, 3)
+mask_array.dtype: uint8
+mask_array.shape: (452, 452, 3)
+mask_array.dtype: uint8
+mask_array.shape: (450, 450, 3)
+mask_array.dtype: uint8
+mask_array.shape: (450, 450, 3)
+mask_array.dtype: uint8
+ 51%|█████▏    | 20/39 [00:04<00:03,  6.28it/s]mask_array.shape: (440, 440, 3)
+mask_array.dtype: uint8
+mask_array.shape: (440, 440, 3)
+mask_array.dtype: uint8
+mask_array.shape: (446, 446, 3)
+mask_array.dtype: uint8
+mask_array.shape: (446, 446, 3)
+mask_array.dtype: uint8
+ 54%|█████▍    | 21/39 [00:04<00:02,  6.28it/s]mask_array.shape: (440, 440, 3)
+mask_array.dtype: uint8
+mask_array.shape: (440, 440, 3)
+mask_array.dtype: uint8
+mask_array.shape: (446, 446, 3)
+mask_array.dtype: uint8
+mask_array.shape: (446, 446, 3)
+mask_array.dtype: uint8
+ 56%|█████▋    | 22/39 [00:04<00:02,  6.29it/s]mask_array.shape: (440, 440, 3)
+mask_array.dtype: uint8
+mask_array.shape: (440, 440, 3)
+mask_array.dtype: uint8
+mask_array.shape: (440, 440, 3)
+mask_array.dtype: uint8
+mask_array.shape: (440, 440, 3)
+mask_array.dtype: uint8
+ 59%|█████▉    | 23/39 [00:05<00:02,  6.32it/s]mask_array.shape: (446, 446, 3)
+mask_array.dtype: uint8
+mask_array.shape: (446, 446, 3)
+mask_array.dtype: uint8
+mask_array.shape: (440, 440, 3)
+mask_array.dtype: uint8
+mask_array.shape: (448, 448, 3)
+mask_array.dtype: uint8
+ 62%|██████▏   | 24/39 [00:05<00:02,  6.33it/s]mask_array.shape: (448, 448, 3)
+mask_array.dtype: uint8
+mask_array.shape: (448, 448, 3)
+mask_array.dtype: uint8
+mask_array.shape: (452, 452, 3)
+mask_array.dtype: uint8
+mask_array.shape: (448, 448, 3)
+mask_array.dtype: uint8
+ 64%|██████▍   | 25/39 [00:05<00:02,  6.33it/s]mask_array.shape: (448, 448, 3)
+mask_array.dtype: uint8
+mask_array.shape: (446, 446, 3)
+mask_array.dtype: uint8
+mask_array.shape: (446, 446, 3)
+mask_array.dtype: uint8
+mask_array.shape: (446, 446, 3)
+mask_array.dtype: uint8
+ 67%|██████▋   | 26/39 [00:05<00:02,  6.35it/s]mask_array.shape: (450, 450, 3)
+mask_array.dtype: uint8
+mask_array.shape: (452, 452, 3)
+mask_array.dtype: uint8
+mask_array.shape: (452, 452, 3)
+mask_array.dtype: uint8
+mask_array.shape: (448, 448, 3)
+mask_array.dtype: uint8
+ 69%|██████▉   | 27/39 [00:05<00:01,  6.30it/s]mask_array.shape: (448, 448, 3)
+mask_array.dtype: uint8
+mask_array.shape: (448, 448, 3)
+mask_array.dtype: uint8
+mask_array.shape: (452, 452, 3)
+mask_array.dtype: uint8
+mask_array.shape: (448, 448, 3)
+mask_array.dtype: uint8
+ 72%|███████▏  | 28/39 [00:05<00:01,  6.30it/s]mask_array.shape: (452, 452, 3)
+mask_array.dtype: uint8
+mask_array.shape: (452, 452, 3)
+mask_array.dtype: uint8
+mask_array.shape: (452, 452, 3)
+mask_array.dtype: uint8
+mask_array.shape: (452, 452, 3)
+mask_array.dtype: uint8
+ 74%|███████▍  | 29/39 [00:05<00:01,  6.32it/s]mask_array.shape: (452, 452, 3)
+mask_array.dtype: uint8
+mask_array.shape: (458, 458, 3)
+mask_array.dtype: uint8
+mask_array.shape: (462, 462, 3)
+mask_array.dtype: uint8
+mask_array.shape: (462, 462, 3)
+mask_array.dtype: uint8
+ 77%|███████▋  | 30/39 [00:06<00:01,  6.32it/s]mask_array.shape: (462, 462, 3)
+mask_array.dtype: uint8
+mask_array.shape: (462, 462, 3)
+mask_array.dtype: uint8
+mask_array.shape: (468, 468, 3)
+mask_array.dtype: uint8
+mask_array.shape: (468, 468, 3)
+mask_array.dtype: uint8
+ 79%|███████▉  | 31/39 [00:06<00:01,  6.31it/s]mask_array.shape: (468, 468, 3)
+mask_array.dtype: uint8
+mask_array.shape: (462, 462, 3)
+mask_array.dtype: uint8
+mask_array.shape: (462, 462, 3)
+mask_array.dtype: uint8
+mask_array.shape: (462, 462, 3)
+mask_array.dtype: uint8
+ 82%|████████▏ | 32/39 [00:06<00:01,  6.30it/s]mask_array.shape: (468, 468, 3)
+mask_array.dtype: uint8
+mask_array.shape: (468, 468, 3)
+mask_array.dtype: uint8
+mask_array.shape: (468, 468, 3)
+mask_array.dtype: uint8
+mask_array.shape: (462, 462, 3)
+mask_array.dtype: uint8
+ 85%|████████▍ | 33/39 [00:06<00:00,  6.31it/s]mask_array.shape: (462, 462, 3)
+mask_array.dtype: uint8
+mask_array.shape: (462, 462, 3)
+mask_array.dtype: uint8
+mask_array.shape: (462, 462, 3)
+mask_array.dtype: uint8
+mask_array.shape: (468, 468, 3)
+mask_array.dtype: uint8
+ 87%|████████▋ | 34/39 [00:06<00:00,  6.31it/s]mask_array.shape: (468, 468, 3)
+mask_array.dtype: uint8
+mask_array.shape: (468, 468, 3)
+mask_array.dtype: uint8
+mask_array.shape: (472, 472, 3)
+mask_array.dtype: uint8
+mask_array.shape: (472, 472, 3)
+mask_array.dtype: uint8
+ 90%|████████▉ | 35/39 [00:06<00:00,  6.33it/s]mask_array.shape: (476, 476, 3)
+mask_array.dtype: uint8
+mask_array.shape: (480, 480, 3)
+mask_array.dtype: uint8
+mask_array.shape: (484, 484, 3)
+mask_array.dtype: uint8
+mask_array.shape: (480, 480, 3)
+mask_array.dtype: uint8
+ 92%|█████████▏| 36/39 [00:07<00:00,  6.32it/s]mask_array.shape: (484, 484, 3)
+mask_array.dtype: uint8
+mask_array.shape: (484, 484, 3)
+mask_array.dtype: uint8
+mask_array.shape: (480, 480, 3)
+mask_array.dtype: uint8
+mask_array.shape: (480, 480, 3)
+mask_array.dtype: uint8
+ 95%|█████████▍| 37/39 [00:07<00:00,  6.26it/s]mask_array.shape: (480, 480, 3)
+mask_array.dtype: uint8
+mask_array.shape: (480, 480, 3)
+mask_array.dtype: uint8
+mask_array.shape: (472, 472, 3)
+mask_array.dtype: uint8
+mask_array.shape: (472, 472, 3)
+mask_array.dtype: uint8
+ 97%|█████████▋| 38/39 [00:07<00:00,  6.29it/s]mask_array.shape: (472, 472, 3)
+mask_array.dtype: uint8
+mask_array.shape: (468, 468, 3)
+mask_array.dtype: uint8
+mask_array.shape: (468, 468, 3)
+mask_array.dtype: uint8
+mask_array.shape: (468, 468, 3)
+mask_array.dtype: uint8
+100%|██████████| 39/39 [00:08<00:00,  2.07it/s]100%|██████████| 39/39 [00:08<00:00,  4.51it/s]
+mask_array.shape: (468, 468, 3)
+mask_array.dtype: uint8
+mask_array.shape: (468, 468, 3)
+mask_array.dtype: uint8
+Total process time of 155 frames including saving images = 8.688010454177856s
+-------------------------------------------------------------------------------------------------out_vid_name audio_0
+ffmpeg -y -v warning -r 30 -f image2 -i C:\computer\3\itproject\manyaitools_modules\MuseTalk\results\20250104120036_fixp/tmp/%08d.png -vcodec libx264 -vf format=rgb24,scale=out_color_matrix=bt709,format=yuv420p -crf 18 C:\computer\3\itproject\manyaitools_modules\MuseTalk\results\20250104120036_fixp/temp.mp4
+ffmpeg -y -v warning -i C:\computer\3\itproject\digitaltool\file\sync\out\20250104181833_swxy\20250104181833_swxy.wav -i C:\computer\3\itproject\manyaitools_modules\MuseTalk\results\20250104120036_fixp/temp.mp4 C:\computer\3\itproject\manyaitools_modules\MuseTalk\results\20250104120036_fixp/vid_output/audio_0.mp4
+[aist#0:0/pcm_s16le @ 00000286c17a0c00] Guessed Channel Layout: stereo
+result is save to C:\computer\3\itproject\manyaitools_modules\MuseTalk\results\20250104120036_fixp/vid_output/audio_0.mp4
+args.save_path: C:\computer\3\itproject\digitaltool\file\sync\out\20250104181833_swxy\20250104181833_swxy_output.mp4
+
+
+[0m

@@ -1,0 +1,6 @@
+20250102004616_oyhj:
+  preparation: False
+  bbox_shift: 5
+  video_path: C:\computer\3\itproject\digitaltool\file\train\20250102004616_oyhj\20250102004616_oyhj.mp4
+  audio_clips:
+    audio_0: C:\computer\3\itproject\digitaltool\file\sync\out\20250104184547_TczV\20250104184547_TczV.wav

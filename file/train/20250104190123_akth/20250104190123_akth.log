@@ -1,0 +1,15 @@
+[2025-01-04 19:01:34] 开始训练...
+add ffmpeg to path
+Loads checkpoint by local backend from path: ./models/dwpose/dw-ll_ucoco_384.pth
+cuda start
+C:\ProgramData\miniconda3\envs\musetalk\lib\site-packages\torch\utils\_contextlib.py:125: UserWarning: Decorating classes is deprecated and will be disabled in future versions. You should only decorate functions or methods. To preserve the current behavior of class decoration, you can directly decorate the `__init__` method and nothing else.
+  warnings.warn("Decorating classes is deprecated and will be disabled in "
+{'20250104190123_akth': {'preparation': True, 'bbox_shift': 5, 'video_path': 'C:\\computer\\3\\itproject\\digitaltool\\file\\train\\20250104190123_akth\\20250104190123_akth.mp4', 'audio_clips': {'audio_0': 'C:\\computer\\3\\itproject\\digitaltool\\file\\train\\20250104190123_akth\\20250104190123_akth.wav'}}}
+TensorFlow GPU is available.
+PyTorch GPU is available.
+Num GPUs Available:  1
+avatar_path---------------------: C:\computer\3\itproject\manyaitools_modules\MuseTalk\results\20250104190123_akth
+*********************************
+  creating avator: 20250104190123_akth
+*********************************
+preparing data materials ... ...
