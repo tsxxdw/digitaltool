@@ -318,43 +318,60 @@ def process_task_queue():
             cmd = f'cmd /c "cd /d {MUSETALK} && conda activate musetalk && python -m tsxxdw.realtime_inference --inference_config {current_task.yaml_path} --save_path {current_task.output_path}"'
         else:
             cmd = f'cd {MUSETALK} && source /root/miniconda3/etc/profile.d/conda.sh && conda activate musetalk && python -m tsxxdw.realtime_inference --inference_config {current_task.yaml_path} --save_path {current_task.output_path}'
-            cmd = f"bash -c '{cmd}'"  # 在Linux环境下包装命令
-        print("------------------------cmd:",cmd)
-        # 启动进程
-        process = subprocess.Popen(
-            cmd,
-            shell=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            encoding='utf-8',
-            errors='replace'
-        )
-        
-        # 写入日志
+            cmd = f"bash -c '{cmd}'"
+
         log_dir = os.path.dirname(current_task.log_file)
         os.makedirs(log_dir, exist_ok=True)
         
         # 在Linux下设置目录权限
         if platform.system() != 'Windows':
             os.chmod(log_dir, 0o755)
-            
+
+        # 使用缓冲区来存储日志
+        log_buffer = []
+        
+        def write_logs():
+            if log_buffer:
+                with open(current_task.log_file, 'a', encoding='utf-8') as log_file:
+                    log_file.write(''.join(log_buffer))
+                log_buffer.clear()
+
         with open(current_task.log_file, 'w', encoding='utf-8') as log_file:
             start_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            log_file.write(f"[{start_time}] 执行命令：{cmd} \n")
             log_file.write(f"[{start_time}] 开始处理任务\n")
             log_file.write(f"[{start_time}] 使用配置文件: {current_task.yaml_path}\n")
-            log_file.flush()
-            
-            while process.poll() is None:
-                # 读取并记录日志
-                line = process.stdout.readline()
-                if line:
-                    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                    log_message = f"[{timestamp}] {line.strip()}"
-                    current_task.log.append(log_message)
-                    log_file.write(log_message + '\n')
-                    log_file.flush()
+
+        process = subprocess.Popen(
+            cmd,
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            encoding='utf-8',
+            errors='replace',
+            bufsize=1
+        )
+
+        last_write_time = time.time()
+        
+        while process.poll() is None:
+            line = process.stdout.readline()
+            if line:
+                timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                log_message = f"[{timestamp}] {line.strip()}\n"
+                current_task.log.append(log_message)
+                log_buffer.append(log_message)
                 
-                time.sleep(1)
+                # 每隔0.5秒写入一次日志
+                current_time = time.time()
+                if current_time - last_write_time >= 0.5:
+                    write_logs()
+                    last_write_time = current_time
+            
+            time.sleep(0.1)  # 减少等待时间
+
+        # 确保所有剩余日志都被写入
+        write_logs()
 
     except Exception as e:
         if current_task:
