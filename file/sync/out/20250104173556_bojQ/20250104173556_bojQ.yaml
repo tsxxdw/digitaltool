@@ -1,6 +1,0 @@
-20250102004511_otrg:
-  preparation: False
-  bbox_shift: 5
-  video_path: C:\computer\3\itproject\digitaltool\file\train\20250102004511_otrg\20250102004511_otrg.mp4
-  audio_clips:
-    audio_0: C:\computer\3\itproject\digitaltool\file\sync\out\20250104173556_bojQ\20250104173556_bojQ.wav

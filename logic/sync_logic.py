@@ -9,6 +9,8 @@ import platform
 import shutil
 from collections import deque
 import time
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
 
 bp = Blueprint('sync', __name__)
 
@@ -268,30 +270,16 @@ def generate_task_id():
     random_str = generate_random_string(4)
     return f"{timestamp}_{random_str}" 
 
-def start_task_processing():
-    """启动定时任务处理"""
-    def run_timer():
-        while True:
-            process_task_queue()
-            time.sleep(5)  # 每5秒检查一次
-            
-    timer_thread = threading.Thread(target=run_timer)
-    timer_thread.daemon = True
-    timer_thread.start()
-
-def process_task_queue():
+async def process_task_queue():
     """处理任务队列"""
     current_task = None
     try:
         with task_lock:
-            # 检查队列是否为空
             if not task_queue:
                 return
             
-            # 获取当前任务
             current_task = task_queue[0]
             
-            # 如果当前任务正在生成中，检查是否已完成
             if current_task.status == "生成中":
                 if os.path.exists(current_task.output_path):
                     current_task.status = "已完成"
@@ -299,21 +287,16 @@ def process_task_queue():
                     task_queue.popleft()
                 return
             
-            # 开始处理新任务
             current_task.status = "生成中"
             current_task.log.append("开始处理任务...")
         
-        # 以下操作不需要加锁
-        # 读取配置文件
         with open(CONFIG_FILE, 'r') as f:
             config = json.load(f)
             
-        # 获取MUSETALK路径
         MUSETALK = config.get('windows_musetalk_path' if platform.system() == 'Windows' else 'linux_musetalk_path', '')
         if not MUSETALK:
             raise Exception("MUSETALK路径未配置")
 
-        # 构建命令
         if platform.system() == 'Windows':
             cmd = f'cmd /c "cd /d {MUSETALK} && conda activate musetalk && python -m tsxxdw.realtime_inference --inference_config {current_task.yaml_path} --save_path {current_task.output_path}"'
         else:
@@ -323,52 +306,28 @@ def process_task_queue():
         log_dir = os.path.dirname(current_task.log_file)
         os.makedirs(log_dir, exist_ok=True)
         
-        # 在Linux下设置目录权限
         if platform.system() != 'Windows':
             os.chmod(log_dir, 0o755)
 
-        # 使用更大的缓冲区和更长的写入间隔
-        log_buffer = []
-        buffer_size_limit = 50  # 日志条数限制
-        
-        def write_logs():
-            if log_buffer:
-                with open(current_task.log_file, 'a', encoding='utf-8') as log_file:
-                    log_file.write(''.join(log_buffer))
-                current_task.log.extend(log_buffer)  # 更新内存中的日志
-                log_buffer.clear()
+        # 写入初始日志
+        with open(current_task.log_file, 'w', encoding='utf-8') as log_file:
+            start_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            log_file.write(f"[{start_time}] 开始处理任务\n")
+            log_file.write(f"[{start_time}] 使用配置文件: {current_task.yaml_path}\n")
 
-        process = subprocess.Popen(
+        # 使用异步执行命令
+        process = await asyncio.create_subprocess_shell(
             cmd,
-            shell=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            encoding='utf-8',
-            errors='replace',
-            bufsize=4096  # 增加缓冲区大小
+            stdout=open(current_task.log_file, 'a', encoding='utf-8'),
+            stderr=asyncio.subprocess.STDOUT
         )
 
-        last_write_time = time.time()
-        
-        while process.poll() is None:
-            line = process.stdout.readline()
-            if line:
-                timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                log_message = f"[{timestamp}] {line.strip()}\n"
-                log_buffer.append(log_message)
-                
-                # 满足以下任一条件时写入日志：
-                # 1. 距离上次写入超过3秒
-                # 2. 缓冲区达到50条日志
-                current_time = time.time()
-                if (current_time - last_write_time >= 5.0) or (len(log_buffer) >= buffer_size_limit):
-                    write_logs()
-                    last_write_time = current_time
-            
-            time.sleep(0.2)  # 增加轮询间隔
+        # 等待进程完成
+        await process.wait()
 
-        # 确保所有剩余日志都被写入
-        write_logs()
+        # 读取日志文件并更新任务日志
+        with open(current_task.log_file, 'r', encoding='utf-8') as log_file:
+            current_task.log = log_file.readlines()
 
     except Exception as e:
         if current_task:
@@ -381,6 +340,22 @@ def process_task_queue():
                     log_file.write(f"[{error_time}] 发生错误: {str(e)}\n")
             except:
                 pass
+
+def start_task_processing():
+    """启动任务处理"""
+    async def run_async():
+        while True:
+            await process_task_queue()
+            await asyncio.sleep(5)
+
+    def run_in_thread():
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        loop.run_until_complete(run_async())
+
+    # 在新线程中运行异步循环
+    executor = ThreadPoolExecutor(max_workers=1)
+    executor.submit(run_in_thread)
 
 # 添加文件访问路由
 @bp.route('/file/sync/out/<path:filename>')
