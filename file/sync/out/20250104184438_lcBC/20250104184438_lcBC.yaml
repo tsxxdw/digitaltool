@@ -1,6 +1,0 @@
-20250104120036_fixp:
-  preparation: False
-  bbox_shift: 5
-  video_path: C:\computer\3\itproject\digitaltool\file\train\20250104120036_fixp\20250104120036_fixp.mp4
-  audio_clips:
-    audio_0: C:\computer\3\itproject\digitaltool\file\sync\out\20250104184438_lcBC\20250104184438_lcBC.wav
