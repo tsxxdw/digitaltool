@@ -1,0 +1,6 @@
+20250106190656_cfla:
+  preparation: True
+  bbox_shift: 5
+  video_path: C:\computer\3\itproject\digitaltool\file\train\20250106190656_cfla\20250106190656_cfla.mp4
+  audio_clips:
+    audio_0: C:\computer\3\itproject\digitaltool\file\train\20250106190656_cfla\20250106190656_cfla.wav

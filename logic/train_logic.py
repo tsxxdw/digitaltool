@@ -12,6 +12,8 @@ from pathlib import Path
 import platform
 import random
 import string
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
 
 bp = Blueprint('train', __name__)
 
@@ -162,7 +164,7 @@ def get_command(yaml_path, save_path):
         cmd = f'cd {MUSETALK} && source /root/miniconda3/etc/profile.d/conda.sh && conda activate musetalk && python -m tsxxdw.realtime_inference --inference_config {yaml_path} --save_path {save_path}'
         return f"bash -c '{cmd}'"  # 在Linux环境下包装命令
 
-def process_task_queue():
+async def process_task_queue():
     """处理任务队列"""
     global current_task
     while True:
@@ -172,66 +174,61 @@ def process_task_queue():
                     current_task = task_queue[0]
                     current_task.status = "训练中"
                 else:
-                    time.sleep(3)
+                    await asyncio.sleep(3)
                     continue
             
             try:
                 yaml_path = current_task.yaml_file
                 save_path = current_task.save_path
                 cmd = get_command(yaml_path, save_path)
-                
                 log_path = current_task.log_file
-                with open(log_path, 'a', encoding='utf-8') as log_file:
+                
+                # 写入初始日志
+                with open(log_path, 'w', encoding='utf-8') as log_file:
                     start_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                     log_file.write(f"[{start_time}] 开始训练...\n")
-                    log_file.flush()
-                    
-                    process = subprocess.Popen(
-                        cmd,
-                        shell=True,
-                        stdout=log_file,
-                        stderr=subprocess.STDOUT,
-                        text=True
-                    )
-                    current_task.process = process  # 保存进程引用
-                    
-                    while process.poll() is None:
-                        if os.path.exists(save_path):
+                
+                # 使用异步执行命令
+                process = await asyncio.create_subprocess_shell(
+                    cmd,
+                    stdout=open(log_path, 'a', encoding='utf-8'),
+                    stderr=asyncio.subprocess.STDOUT
+                )
+                current_task.process = process
+
+                while True:
+                    if process.returncode is not None:
+                        break
+                        
+                    if os.path.exists(save_path):
+                        with open(log_path, 'a', encoding='utf-8') as log_file:
                             end_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                             log_file.write(f"[{end_time}] 训练完成，输出文件已生成\n")
-                            
-                            # 更新状态
-                            current_task.status = "已完成"
-                            
-                            time.sleep(3)
-                            
-                            try:
-                                process.terminate()
-                                time.sleep(1)
-                                if process.poll() is None:
-                                    process.kill()
-                                log_file.write(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] 进程已终止\n")
-                            except Exception as e:
-                                log_file.write(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] 终止进程时出错: {str(e)}\n")
-                            
-                            break
                         
-                        time.sleep(1)
+                        current_task.status = "已完成"
+                        try:
+                            process.terminate()
+                            await asyncio.sleep(1)
+                            if process.returncode is None:
+                                process.kill()
+                        except Exception as e:
+                            with open(log_path, 'a', encoding='utf-8') as log_file:
+                                log_file.write(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] 终止进程时出错: {str(e)}\n")
+                        break
                     
-                    if not os.path.exists(save_path):
+                    await asyncio.sleep(1)
+                
+                if not os.path.exists(save_path):
+                    with open(log_path, 'a', encoding='utf-8') as log_file:
                         end_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                         log_file.write(f"[{end_time}] 训练失败，未生成输出文件\n")
-                        
-                        # 更新状态
-                        current_task.status = "失败"
-                    
-                    log_file.flush()
+                    current_task.status = "失败"
                 
             except Exception as e:
                 with open(log_path, 'a', encoding='utf-8') as log_file:
                     error_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                     log_file.write(f"[{error_time}] 执行出错: {str(e)}\n")
-                
+            
             finally:
                 with task_lock:
                     if task_queue and task_queue[0] == current_task:
@@ -240,10 +237,27 @@ def process_task_queue():
                     
         except Exception as e:
             print(f"任务处理循环出错: {str(e)}")
-            time.sleep(5)
+            await asyncio.sleep(5)
 
-# 启动任务处理线程
-threading.Thread(target=process_task_queue, daemon=True).start()
+def start_task_processing():
+    """启动任务处理"""
+    async def run_async():
+        while True:
+            await process_task_queue()
+            await asyncio.sleep(5)
+
+    def run_in_thread():
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        loop.run_until_complete(run_async())
+
+    # 在新线程中运行异步循环
+    executor = ThreadPoolExecutor(max_workers=1)
+    executor.submit(run_in_thread)
+
+# 修改启动代码
+# threading.Thread(target=process_task_queue, daemon=True).start()
+start_task_processing()
 
 @bp.route('/train')
 def train():
