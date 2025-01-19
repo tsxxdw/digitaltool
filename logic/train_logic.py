@@ -169,6 +169,9 @@ async def process_task_queue():
     global current_task
     while True:
         try:
+            print(f"当前操作系统: {platform.system()}")
+            print(f"TRAIN_DIR 权限: {oct(os.stat(TRAIN_DIR).st_mode)[-3:]}")
+            print(f"当前用户: {os.getuid() if hasattr(os, 'getuid') else 'N/A'}")
             with task_lock:
                 if not current_task and task_queue:
                     current_task = task_queue[0]
